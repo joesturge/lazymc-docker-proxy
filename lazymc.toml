@@ -1,0 +1,27 @@
+# lazymc configuration see: https://github.com/timvisee/lazymc/blob/master/res/lazymc.toml
+
+[server]
+address = "${SERVER_HOST}:${SERVER_PORT}"
+directory = "."
+command = "./start-command.sh"
+freeze_process = false
+wake_on_start = true
+wake_on_crash = false
+probe_on_start = ${PROBE_ON_START}
+forge = ${FORGE}
+send_proxy_v2 = ${SEND_PROXY_V2}
+
+[time]
+sleep_after = ${SLEEP_AFTER}
+minimum_online_time = ${MINIMUM_ONLINE_TIME}
+
+[rcon]
+enabled = ${RCON_ENABLED}
+port = ${RCON_PORT}
+password = "${RCON_PASSWORD}"
+
+[advanced]
+rewrite_server_properties = false
+
+[config]
+version = "0.2.11"
