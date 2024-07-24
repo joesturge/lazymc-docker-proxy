@@ -1,0 +1,11 @@
+[package]
+name = "lazymc-docker-proxy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.10", features = ["derive"] }
+ctrlc = "3.4.4"
+docker = "0.0.41"
+serde = "1.0.204"
+toml = "0.8.15"
