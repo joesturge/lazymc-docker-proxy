@@ -4,7 +4,7 @@ use std::process::Command;
 
 pub fn run() {
     config::generate();
-    
+
     // Create a new Command to run "lazymc start"
     let mut child: std::process::Child = Command::new("lazymc")
         .arg("start")

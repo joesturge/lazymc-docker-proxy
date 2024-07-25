@@ -1,6 +1,6 @@
-use std::{fs, path::Path};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::env;
+use std::{fs, path::Path};
 
 #[derive(Serialize, Deserialize)]
 struct ServerSection {
@@ -60,23 +60,45 @@ struct Config {
 
 pub fn generate() {
     let server_section: ServerSection = ServerSection {
-        address: env::var("SERVER_ADDRESS").expect("SERVER_ADDRESS is not set").into(),
+        address: env::var("SERVER_ADDRESS")
+            .expect("SERVER_ADDRESS is not set")
+            .into(),
         directory: Some("/server".to_string()),
         command: Some(format!("{} -c", env!("CARGO_PKG_NAME"))),
-        freeze_process: env::var("SERVER_FREEZE_PROCESS").ok().map(|x: String| x == "true"),
-        wake_on_start: env::var("SERVER_WAKE_ON_START").ok().map(|x: String| x == "true"),
-        wake_on_crash: env::var("SERVER_WAKE_ON_CRASH").ok().map(|x: String| x == "true"),
-        wake_whitelist: env::var("SERVER_WAKE_WHITELIST").ok().map(|x: String| x == "true"),
-        block_banned_ips: env::var("SERVER_BLOCK_BANNED_IPS").ok().map(|x: String| x == "true"),
-        drop_banned_ips: env::var("SERVER_DROP_BANNED_IPS").ok().map(|x: String| x == "true"),
-        probe_on_start: env::var("SERVER_PROBE_ON_START").ok().map(|x: String| x == "true"),
+        freeze_process: env::var("SERVER_FREEZE_PROCESS")
+            .ok()
+            .map(|x: String| x == "true"),
+        wake_on_start: env::var("SERVER_WAKE_ON_START")
+            .ok()
+            .map(|x: String| x == "true"),
+        wake_on_crash: env::var("SERVER_WAKE_ON_CRASH")
+            .ok()
+            .map(|x: String| x == "true"),
+        wake_whitelist: env::var("SERVER_WAKE_WHITELIST")
+            .ok()
+            .map(|x: String| x == "true"),
+        block_banned_ips: env::var("SERVER_BLOCK_BANNED_IPS")
+            .ok()
+            .map(|x: String| x == "true"),
+        drop_banned_ips: env::var("SERVER_DROP_BANNED_IPS")
+            .ok()
+            .map(|x: String| x == "true"),
+        probe_on_start: env::var("SERVER_PROBE_ON_START")
+            .ok()
+            .map(|x: String| x == "true"),
         forge: env::var("SERVER_FORGE").ok().map(|x: String| x == "true"),
-        send_proxy_v2: env::var("SERVER_SEND_PROXY_V2").ok().map(|x: String| x == "true"),
+        send_proxy_v2: env::var("SERVER_SEND_PROXY_V2")
+            .ok()
+            .map(|x: String| x == "true"),
     };
 
     let time_section: TimeSection = TimeSection {
-        sleep_after: env::var("TIME_SLEEP_AFTER").ok().and_then(|x: String| x.parse().ok()),
-        minimum_online_time: env::var("TIME_MINIMUM_ONLINE_TIME").ok().and_then(|x: String| x.parse().ok()),
+        sleep_after: env::var("TIME_SLEEP_AFTER")
+            .ok()
+            .and_then(|x: String| x.parse().ok()),
+        minimum_online_time: env::var("TIME_MINIMUM_ONLINE_TIME")
+            .ok()
+            .and_then(|x: String| x.parse().ok()),
     };
 
     let motd_section: MotdSection = MotdSection {
@@ -87,7 +109,9 @@ pub fn generate() {
 
     let rcon_section: RconSection = RconSection {
         enabled: env::var("RCON_ENABLED").ok().map(|x: String| x == "true"),
-        port: env::var("RCON_PORT").ok().and_then(|x: String| x.parse().ok()),
+        port: env::var("RCON_PORT")
+            .ok()
+            .and_then(|x: String| x.parse().ok()),
         password: env::var("RCON_PASSWORD").ok(),
     };
 
@@ -109,20 +133,17 @@ pub fn generate() {
     };
 
     // Convert the config struct to a toml::Value
-    let toml_data: toml::Value = toml::Value::try_from(config)
-        .expect("Failed to convert to TOML data");
+    let toml_data: toml::Value =
+        toml::Value::try_from(config).expect("Failed to convert to TOML data");
 
     // Convert the toml::Value to a string
-    let toml_string: String = toml::to_string(&toml_data)
-        .expect("Failed to serialize TOML data");
+    let toml_string: String = toml::to_string(&toml_data).expect("Failed to serialize TOML data");
 
     // Path to the output TOML file
     let output_path: &Path = Path::new("lazymc.toml");
 
     // Write the TOML string to the file
-    fs::write(output_path, toml_string)
-        .expect("Failed to write TOML file");
+    fs::write(output_path, toml_string).expect("Failed to write TOML file");
 
     println!("Generated lazymc.toml");
 }
-

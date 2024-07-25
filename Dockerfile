@@ -16,7 +16,11 @@ RUN git clone --branch $LAZYMC_VERSION https://github.com/timvisee/lazymc . && \
 # Use an official Rust image as the base
 FROM rust:1.74 as app-builder
 
-RUN apt-get update && apt-get install -y pkg-config libssl-dev build-essential
+# Install dependencies for compiling lazymc-docker-proxy
+RUN apt-get update && apt-get install -y pkg-config libssl-dev
+
+# Set the working directory
+WORKDIR /usr/src/lazymc-docker-proxy
 
 # Copy source code
 COPY Cargo.toml Cargo.lock ./
@@ -35,7 +39,7 @@ RUN apt-get update && apt-get install -y docker.io
 COPY --from=lazymc-builder /usr/src/lazymc/target/release/lazymc /usr/local/bin/lazymc
 
 # Copy the compiled binary from the lazymc-docker-proxy stage
-COPY --from=app-builder /usr/src/lazymc/target/release/lazymc-docker-proxy /usr/local/bin/lazymc-docker-proxy
+COPY --from=app-builder /usr/src/lazymc-docker-proxy/target/release/lazymc-docker-proxy /usr/local/bin/lazymc-docker-proxy
 
 # Set the working directory
 WORKDIR /app

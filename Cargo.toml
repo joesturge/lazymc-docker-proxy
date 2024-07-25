@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.5.10", features = ["derive"] }
-ctrlc = "3.4.4"
-docker = "0.0.41"
-serde = "1.0.204"
+tokio = { version = "1", default-features = false, features = ["full"] }
 toml = "0.8.15"
+bollard = "0.16.1"
+clap = { version = "4.5.10", features = ["derive"] }
+ctrlc = { version = "3.4.4", features = ["termination"] }
+serde = "1.0.204"
+log = "0.4.22"
