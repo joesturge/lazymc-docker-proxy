@@ -11,3 +11,4 @@ clap = { version = "4.5.10", features = ["derive"] }
 ctrlc = { version = "3.4.4", features = ["termination"] }
 serde = "1.0.204"
 log = "0.4.22"
+futures = "0.3.30"

@@ -64,7 +64,7 @@ pub fn generate() {
             .expect("SERVER_ADDRESS is not set")
             .into(),
         directory: Some("/server".to_string()),
-        command: Some(format!("{} -c", env!("CARGO_PKG_NAME"))),
+        command: Some("lazymc-docker-proxy -c".to_string()),
         freeze_process: env::var("SERVER_FREEZE_PROCESS")
             .ok()
             .map(|x: String| x == "true"),

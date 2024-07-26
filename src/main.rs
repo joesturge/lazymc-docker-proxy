@@ -20,17 +20,13 @@ fn main() {
     if args.command {
         // Set a handler for SIGTERM
         ctrlc::set_handler(move || {
-            tokio::runtime::Runtime::new()
-                .unwrap()
-                .block_on(command::stop());
+            command::stop();
             exit(0);
         })
         .expect("Error setting SIGTERM handler");
 
         // Start the command
-        tokio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(command::start());
+        command::start();
 
         // Wait for SIGTERM
         loop {
