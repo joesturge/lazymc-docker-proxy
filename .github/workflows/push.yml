@@ -1,6 +1,6 @@
 name: Build Docker Image
 on:
-    push:
+  push:
 env:
   REGISTRY: joesturge
   IMAGE_NAME: ${{ github.repository }}
@@ -14,7 +14,9 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: docker
         uses: ./.github/actions/docker
         with:
-          dry-run: 'true'
+          dry-run: "true"
