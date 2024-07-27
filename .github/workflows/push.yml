@@ -1,0 +1,20 @@
+name: Build Docker Image
+on:
+    push:
+env:
+  REGISTRY: joesturge
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: docker
+        uses: ./.github/actions/docker
+        with:
+          dry-run: 'true'
