@@ -2,7 +2,7 @@ name: Build Docker Image
 on:
   push:
 env:
-  REGISTRY: joesturge
+  REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
