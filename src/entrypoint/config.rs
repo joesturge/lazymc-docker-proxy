@@ -64,16 +64,14 @@ pub fn generate() {
             .expect("SERVER_ADDRESS is not set")
             .into(),
         directory: Some("/server".to_string()),
-        command: Some("lazymc-docker-proxy -c".to_string()),
-        freeze_process: env::var("SERVER_FREEZE_PROCESS")
-            .ok()
-            .map(|x: String| x == "true"),
-        wake_on_start: env::var("SERVER_WAKE_ON_START")
-            .ok()
-            .map(|x: String| x == "true"),
-        wake_on_crash: env::var("SERVER_WAKE_ON_CRASH")
-            .ok()
-            .map(|x: String| x == "true"),
+        command: Some("/app/command.sh".to_string()),
+        // It tries to unfreeze the process when the server PID is not created yet
+        freeze_process: Some(false),
+        // It does not work if 'wake_on_start' is not set to true as the server starts when docker compose starts
+        // We need the start command to run at boot so that lazymc has a PID to keep track of
+        wake_on_start: Some(true),
+        // Probably a good idea to enforce this too, as we suggest that users should use 'restart: no' in the mc server docker compose file
+        wake_on_crash: Some(true),
         wake_whitelist: env::var("SERVER_WAKE_WHITELIST")
             .ok()
             .map(|x: String| x == "true"),

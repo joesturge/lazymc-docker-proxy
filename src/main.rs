@@ -5,32 +5,35 @@ use std::process::exit;
 
 use clap::Parser;
 
-/// Wrapper for lazymc to run against a docker minecraft server
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+enum Command {
+    /// Start the server
+    #[clap(name = "start")]
+    Start,
+    /// Stop the server
+    #[clap(name = "stop")]
+    Stop,
+}
+
+#[derive(Parser, Debug)]
 struct Args {
-    /// Execute with this flag when running as a lazymc start command
-    #[arg(short, long)]
-    command: bool,
+    #[clap(subcommand)]
+    command: Option<Command>,
 }
 
 fn main() {
     let args: Args = Args::parse();
 
-    if args.command {
-        // Set a handler for SIGTERM
-        ctrlc::set_handler(move || {
-            command::stop();
-            exit(0);
-        })
-        .expect("Error setting SIGTERM handler");
-
-        // Start the command
-        command::start();
-
-        // Wait for SIGTERM
-        loop {
-            std::thread::sleep(std::time::Duration::from_secs(1));
+    if let Some(command) = args.command {
+        match command {
+            Command::Start => {
+                command::start();
+                exit(0);
+            }
+            Command::Stop => {
+                command::stop();
+                exit(0);
+            }
         }
     } else {
         entrypoint::run();

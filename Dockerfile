@@ -11,7 +11,7 @@ WORKDIR /usr/src/lazymc
 ARG LAZYMC_VERSION=v0.2.11
 
 RUN git clone --branch $LAZYMC_VERSION https://github.com/timvisee/lazymc . && \
-    cargo build --release
+    cargo build --release --locked
 
 # Use an official Rust image as the base
 FROM rust:1.74 as app-builder
@@ -27,7 +27,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
 # Build the binary
-RUN cargo build --release
+RUN cargo build --release --locked
 
 # Use an official Eclipse Temurin image as the base
 FROM eclipse-temurin:19-jre-jammy
@@ -43,6 +43,12 @@ COPY --from=app-builder /usr/src/lazymc-docker-proxy/target/release/lazymc-docke
 
 # Set the working directory
 WORKDIR /app
+
+# Copy the command script
+COPY command.sh /app/command.sh
+
+# Set the command script as executable
+RUN chmod +x /app/command.sh
 
 # Run lazymc by default
 ENTRYPOINT ["lazymc-docker-proxy"]
