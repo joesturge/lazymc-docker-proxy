@@ -17,7 +17,10 @@ pub fn stop() {
 
     // find all matching running containers
     list_container_filters.insert("status".to_string(), vec!["running".to_string()]);
-    list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", lazymc_group())]);
+    list_container_filters.insert(
+        "label".to_string(),
+        vec![format!("lazymc.group={}", lazymc_group())],
+    );
 
     // find all matching containers and then stop them using .then()
     Runtime::new().unwrap().block_on(
@@ -49,7 +52,10 @@ pub fn start() {
 
     // find all matching exited containers
     list_container_filters.insert("status".to_string(), vec!["exited".to_string()]);
-    list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", lazymc_group())]);
+    list_container_filters.insert(
+        "label".to_string(),
+        vec![format!("lazymc.group={}", lazymc_group())],
+    );
 
     // find all matching containers and then stop them using .then()
     Runtime::new().unwrap().block_on(

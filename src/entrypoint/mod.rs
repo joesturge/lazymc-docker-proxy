@@ -3,7 +3,6 @@ mod config;
 use std::process::{self, exit, Command, ExitStatus};
 
 pub fn run() {
-
     config::generate();
 
     // Create a new Command to run "lazymc start"

@@ -5,7 +5,9 @@ edition = "2021"
 rust-version = "1.74.0"
 
 [dependencies]
-tokio = { version = "1.39.0", default-features = false, features = ["rt-multi-thread"] }
+tokio = { version = "1.39.0", default-features = false, features = [
+    "rt-multi-thread",
+] }
 toml = "0.8.15"
 bollard = "0.16.1"
 clap = { version = "4.5.10", features = ["derive"] }
