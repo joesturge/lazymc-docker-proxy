@@ -1,6 +1,9 @@
 name: Build Docker Image
 on:
   push:
+    branches:
+        - '**'
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
