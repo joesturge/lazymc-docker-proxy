@@ -19,5 +19,3 @@ jobs:
         uses: actions/checkout@v4
       - name: docker
         uses: ./.github/actions/docker
-        with:
-          dry-run: "true"
