@@ -1,0 +1,42 @@
+name: Docker
+description: Build and push docker image
+inputs:
+  publish:
+    description: "Run the action without pushing the image"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ env.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+    - name: Build and push Docker image
+      id: push
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: ${{ inputs.publish }}
+        tags: ${{ steps.meta.outputs.tags }}
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      if: ${{ inputs.publish == 'true' }}
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: ${{ inputs.publish }}
