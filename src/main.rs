@@ -1,5 +1,9 @@
+#[macro_use]
+extern crate log;
+
 mod command;
 mod entrypoint;
+mod logging;
 
 use clap::Parser;
 
@@ -13,6 +17,8 @@ struct Args {
 }
 
 fn main() {
+    logging::init();
+
     let args: Args = Args::parse();
 
     if args.command {

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::process::exit;
 use std::{fs, path::Path};
 use toml::Value;
 
@@ -60,9 +61,14 @@ struct Config {
 }
 
 pub fn generate() {
+    info!(target: "lazymc-docker-proxy::config", "Generating lazymc.toml...");
+
     let server_section: ServerSection = ServerSection {
         address: env::var("SERVER_ADDRESS")
-            .expect("SERVER_ADDRESS is not set")
+            .unwrap_or_else(|err| {
+                error!(target: "lazymc-docker-proxy::config", "SERVER_ADDRESS is not set: {}", err);
+                exit(1);
+            })
             .into(),
         directory: Some("/server".to_string()),
         command: Some("lazymc-docker-proxy --command".to_string()),
@@ -132,16 +138,25 @@ pub fn generate() {
     };
 
     // Convert the config struct to a toml::Value
-    let toml_data: Value = Value::try_from(config).expect("Failed to convert to TOML data");
+    let toml_data: Value = Value::try_from(config).unwrap_or_else(|err| {
+        error!(target: "lazymc-docker-proxy::config", "Failed to convert to TOML data: {}", err);
+        exit(1);
+    });
 
     // Convert the toml::Value to a string
-    let toml_string: String = toml::to_string(&toml_data).expect("Failed to serialize TOML data");
+    let toml_string: String = toml::to_string(&toml_data).unwrap_or_else(|err| {
+        error!(target: "lazymc-docker-proxy::config", "Failed to serialize TOML data: {}", err);
+        exit(1);
+    });
 
     // Path to the output TOML file
     let output_path: &Path = Path::new("lazymc.toml");
 
     // Write the TOML string to the file
-    fs::write(output_path, toml_string).expect("Failed to write TOML file");
+    fs::write(output_path, toml_string).unwrap_or_else(|err| {
+        error!(target: "lazymc-docker-proxy::config", "Failed to write TOML file: {}", err);
+        exit(1);
+    });
 
-    println!("Generated lazymc.toml");
+    info!(target: "lazymc-docker-proxy::config", "Successfully generated lazymc.toml");
 }

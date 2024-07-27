@@ -5,13 +5,14 @@ edition = "2021"
 rust-version = "1.74.0"
 
 [dependencies]
+bollard = "0.16.1"
+clap = { version = "4.5.10", features = ["derive"] }
+ctrlc = { version = "3.4.4", features = ["termination"] }
+futures = "0.3.30"
+log = "0.4"
+pretty_env_logger = "0.5"
+serde = "1.0.204"
 tokio = { version = "1.39.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
 toml = "0.8.15"
-bollard = "0.16.1"
-clap = { version = "4.5.10", features = ["derive"] }
-ctrlc = { version = "3.4.4", features = ["termination"] }
-serde = "1.0.204"
-log = "0.4.22"
-futures = "0.3.30"

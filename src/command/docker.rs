@@ -1,16 +1,25 @@
 use std::collections::HashMap;
+use std::process::exit;
 
 use bollard::container::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
 use bollard::Docker;
 use futures::{future, FutureExt};
+use log::error;
 use tokio::runtime::Runtime;
 
 pub fn lazymc_group() -> String {
-    return std::env::var("LAZYMC_GROUP").expect("LAZYMC_GROUP must be set");
+    std::env::var("LAZYMC_GROUP").unwrap_or_else(|err| {
+        error!("LAZYMC_GROUP is not set: {}", err);
+        exit(1)
+    })
 }
 
 pub fn stop() {
-    let docker: Docker = Docker::connect_with_local_defaults().expect("Error connecting to docker");
+    debug!(target: "lazymc-docker-proxy::docker", "Stopping containers...");
+    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
+        error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
+        exit(1)
+    });
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
@@ -31,12 +40,17 @@ pub fn stop() {
                 ..Default::default()
             }))
             .then(|containers| async {
+                debug!(target: "lazymc-docker-proxy::docker", "Found {} container(s) to stop", containers.as_ref().unwrap().len());
                 for container in containers.unwrap() {
+                    info!(target: "lazymc-docker-proxy::docker", "Stopping container: {}", container.names.unwrap().first().unwrap());
                     if let Err(err) = docker
-                        .stop_container(&container.id.unwrap(), None::<StopContainerOptions>)
+                        .stop_container(
+                            container.id.as_ref().unwrap(), 
+                            None::<StopContainerOptions>
+                        )
                         .await
                     {
-                        println!("Error stopping container: {:?}", err);
+                        error!(target: "lazymc-docker-proxy::docker", "Error stopping container: {}", err);
                     }
                 }
                 return future::ready(()).await;
@@ -45,6 +59,7 @@ pub fn stop() {
 }
 
 pub fn start() {
+    debug!(target: "lazymc-docker-proxy::docker", "Starting containers...");
     let docker: Docker = Docker::connect_with_local_defaults().expect("Error connecting to docker");
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
@@ -66,15 +81,17 @@ pub fn start() {
                 ..Default::default()
             }))
             .then(|containers| async {
+                debug!(target: "lazymc-docker-proxy::docker", "Found {} container(s) to start", containers.as_ref().unwrap().len());
                 for container in containers.unwrap() {
+                    info!(target: "lazymc-docker-proxy::docker", "Starting container: {}", container.names.unwrap().first().unwrap());
                     if let Err(err) = docker
                         .start_container(
-                            &container.id.unwrap(),
+                            container.id.as_ref().unwrap(),
                             None::<StartContainerOptions<&str>>,
                         )
                         .await
                     {
-                        println!("Error starting container: {:?}", err);
+                        error!(target: "lazymc-docker-proxy::docker", "Error starting container: {}", err);
                     }
                 }
                 return future::ready(()).await;

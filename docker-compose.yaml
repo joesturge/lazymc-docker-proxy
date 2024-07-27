@@ -5,9 +5,7 @@ services:
     container_name: lazymc
     environment:
       - SERVER_ADDRESS=mc:25565
-      - DEBUG=true
       - LAZYMC_GROUP=mc
-      - RUST_LOG=trace
       - TIME_MINIMUM_ONLINE_TIME=10
       - TIME_SLEEP_AFTER=10
     restart: unless-stopped
