@@ -14,6 +14,7 @@ Here is a minimal Docker Compose example using [itzg/minecraft-server](https://g
 services:
     lazymc:
         container_name: lazymc
+        image: ghcr.io/joesturge/lazymc-docker-proxy:latest
         environment:
             # Point to the service name of the Minecraft server
             - SERVER_ADDRESS=mc:25565
@@ -29,7 +30,6 @@ services:
             # lazymc-docker-proxy acts as a proxy, so there is
             # no need to expose the server port on the Minecraft container
             - "25565:25565"
-        build: .
 
     # Standard Docker Minecraft server, also works with other server types
     mc:
