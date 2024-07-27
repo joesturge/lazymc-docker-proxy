@@ -64,7 +64,7 @@ pub fn generate() {
             .expect("SERVER_ADDRESS is not set")
             .into(),
         directory: Some("/server".to_string()),
-        command: Some("/app/command.sh".to_string()),
+        command: Some("lazymc-docker-proxy --command".to_string()),
         // It tries to unfreeze the process when the server PID is not created yet
         freeze_process: Some(false),
         // It does not work if 'wake_on_start' is not set to true as the server starts when docker compose starts

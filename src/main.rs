@@ -1,40 +1,22 @@
 mod command;
 mod entrypoint;
 
-use std::process::exit;
-
 use clap::Parser;
 
+/// Wrapper for lazymc to run against a docker minecraft server
 #[derive(Parser, Debug)]
-enum Command {
-    /// Start the server
-    #[clap(name = "start")]
-    Start,
-    /// Stop the server
-    #[clap(name = "stop")]
-    Stop,
-}
-
-#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
 struct Args {
-    #[clap(subcommand)]
-    command: Option<Command>,
+    /// Execute with this flag when running as a lazymc start command
+    #[arg(short, long)]
+    command: bool,
 }
 
 fn main() {
     let args: Args = Args::parse();
 
-    if let Some(command) = args.command {
-        match command {
-            Command::Start => {
-                command::start();
-                exit(0);
-            }
-            Command::Stop => {
-                command::stop();
-                exit(0);
-            }
-        }
+    if args.command {
+        command::run();
     } else {
         entrypoint::run();
     }

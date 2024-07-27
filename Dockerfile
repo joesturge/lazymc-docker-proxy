@@ -44,11 +44,5 @@ COPY --from=app-builder /usr/src/lazymc-docker-proxy/target/release/lazymc-docke
 # Set the working directory
 WORKDIR /app
 
-# Copy the command script
-COPY command.sh /app/command.sh
-
-# Set the command script as executable
-RUN chmod +x /app/command.sh
-
 # Run lazymc by default
 ENTRYPOINT ["lazymc-docker-proxy"]
