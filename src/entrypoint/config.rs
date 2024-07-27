@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use toml::Value;
 use std::env;
 use std::{fs, path::Path};
 
@@ -131,8 +132,8 @@ pub fn generate() {
     };
 
     // Convert the config struct to a toml::Value
-    let toml_data: toml::Value =
-        toml::Value::try_from(config).expect("Failed to convert to TOML data");
+    let toml_data: Value =
+        Value::try_from(config).expect("Failed to convert to TOML data");
 
     // Convert the toml::Value to a string
     let toml_string: String = toml::to_string(&toml_data).expect("Failed to serialize TOML data");

@@ -1,10 +1,12 @@
+use std::{process, thread, time::Duration};
+
 mod docker;
 
 pub fn run() {
     // Set a handler for SIGTERM
     ctrlc::set_handler(move || {
         docker::stop();
-        std::process::exit(0);
+        process::exit(0);
     })
     .expect("Error setting SIGTERM handler");
 
@@ -13,6 +15,6 @@ pub fn run() {
 
     // Wait for SIGTERM
     loop {
-        std::thread::sleep(std::time::Duration::from_secs(1));
+        thread::sleep(Duration::from_secs(1));
     }
 }

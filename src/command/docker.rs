@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use bollard::container::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
 use bollard::Docker;
-use futures::FutureExt;
+use futures::{future, FutureExt};
+use tokio::runtime::Runtime;
 
 pub fn lazymc_group() -> String {
     return std::env::var("LAZYMC_GROUP").expect("LAZYMC_GROUP must be set");
@@ -19,7 +20,7 @@ pub fn stop() {
     list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", lazymc_group())]);
 
     // find all matching containers and then stop them using .then()
-    tokio::runtime::Runtime::new().unwrap().block_on(
+    Runtime::new().unwrap().block_on(
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
@@ -35,7 +36,7 @@ pub fn stop() {
                         println!("Error stopping container: {:?}", err);
                     }
                 }
-                return futures::future::ready(()).await;
+                return future::ready(()).await;
             }),
     );
 }
@@ -51,7 +52,7 @@ pub fn start() {
     list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", lazymc_group())]);
 
     // find all matching containers and then stop them using .then()
-    tokio::runtime::Runtime::new().unwrap().block_on(
+    Runtime::new().unwrap().block_on(
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
@@ -70,7 +71,7 @@ pub fn start() {
                         println!("Error starting container: {:?}", err);
                     }
                 }
-                return futures::future::ready(()).await;
+                return future::ready(()).await;
             }),
     );
 }
