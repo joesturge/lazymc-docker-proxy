@@ -73,6 +73,7 @@ Here is a full list of the environment variables supported by this image (* is r
 - **RCON_ENABLED** - Enable sleeping server through RCON.
 - **RCON_PORT** - Server RCON port. Must differ from public and server port.
 - **RCON_PASSWORD** - Server RCON password.
+- **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
 
 > Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
 

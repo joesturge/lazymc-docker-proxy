@@ -1,3 +1,6 @@
+# setup lazymc version
+ARG LAZYMC_VERSION=0.2.11
+
 # Use an official Rust image as the base
 FROM rust:1.74 as lazymc-builder
 
@@ -8,9 +11,9 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev
 WORKDIR /usr/src/lazymc
 
 # Clone the lazymc repository and compile the binary
-ARG LAZYMC_VERSION=v0.2.11
-
-RUN git clone --branch $LAZYMC_VERSION https://github.com/timvisee/lazymc . && \
+ARG LAZYMC_VERSION
+ENV LAZYMC_VERSION=$LAZYMC_VERSION
+RUN git clone --branch v$LAZYMC_VERSION https://github.com/timvisee/lazymc . && \
     cargo build --release --locked
 
 # Use an official Rust image as the base
@@ -31,6 +34,10 @@ RUN cargo build --release --locked
 
 # Use an official Eclipse Temurin image as the base
 FROM eclipse-temurin:19-jre-jammy
+
+# setup lazymc version
+ARG LAZYMC_VERSION
+ENV LAZYMC_VERSION=$LAZYMC_VERSION
 
 # Install docker
 RUN apt-get update && apt-get install -y docker.io

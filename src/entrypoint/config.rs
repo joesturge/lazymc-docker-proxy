@@ -125,7 +125,12 @@ pub fn generate() {
     };
 
     let config_section: ConfigSection = ConfigSection {
-        version: Some("0.2.11".to_string()),
+        version: env::var("LAZYMC_VERSION")
+        .unwrap_or_else(|err| {
+            error!(target: "lazymc-docker-proxy::config", "LAZYMC_VERSION is not set: {}", err);
+            exit(1);
+        })
+        .into(),
     };
 
     let config: Config = Config {
