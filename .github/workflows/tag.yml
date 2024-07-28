@@ -33,6 +33,7 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -58,7 +59,10 @@ jobs:
           draft: false
           prerelease: false
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
         with:
-          commit_message: "[ci-skip] release: ${{ github.ref }}"
-          branch: master
+          title: Release ${{ github.ref }}
+          branch: release/${{ github.ref }}
+          commit-message: "[ci skip] update changelog for ${{ github.ref }}"
+          body: This PR was created by the release workflow.
