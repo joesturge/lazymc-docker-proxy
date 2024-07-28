@@ -68,7 +68,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-            title: Release ${{ github.ref_name }}
+          title: Release ${{ github.ref_name }}
           branch: release/${{ github.ref_name }}
           commit-message: "[ci skip] update changelog for ${{ github.ref_name }}"
           body: This PR was created by the release workflow.
