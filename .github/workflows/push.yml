@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Integration Test
 on:
   push:
     branches:
@@ -10,15 +10,20 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  build:
-    name: Build
+  test:
+    name: Integration Test
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
 
     steps:
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: docker
-        uses: ./.github/actions/docker
+      
+      - name: Run tests
+        run: bats -r .
+      
