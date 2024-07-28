@@ -40,12 +40,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: master
+      
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
 
       - name: Update changelog
         id: update_changelog
         uses: thomaseizinger/keep-a-changelog-new-release@v2
         with:
-          tag: ${{ github.ref }}
+          tag: ${{ steps.tag.outputs.tag }}
 
       - name: Create Release
         id: create_release
@@ -53,8 +59,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           body: ${{ steps.update_changelog.outputs.release-notes }}
           draft: false
           prerelease: false
@@ -62,7 +68,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: Release ${{ github.ref }}
-          branch: release/${{ github.ref }}
-          commit-message: "[ci skip] update changelog for ${{ github.ref }}"
+            title: Release ${{ github.ref_name }}
+          branch: release/${{ github.ref_name }}
+          commit-message: "[ci skip] update changelog for ${{ github.ref_name }}"
           body: This PR was created by the release workflow.
