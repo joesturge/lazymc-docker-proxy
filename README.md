@@ -6,6 +6,8 @@ If you have multiple Docker Minecraft servers and you are low on resources or wa
 
 This project is also somewhat inspired by [lazytainer](https://github.com/vmorganp/Lazytainer).
 
+![352780601-ef0e0524-caa0-48dc-b0d4-d6e33f578742](https://github.com/user-attachments/assets/7d6fe957-1599-47b4-b9bc-696e33c078d2)
+
 # Usage
 
 Here is a minimal Docker Compose example using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) as the server:
