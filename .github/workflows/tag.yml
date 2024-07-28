@@ -49,9 +49,16 @@ jobs:
 
       - name: Update changelog
         id: update_changelog
-        uses: thomaseizinger/keep-a-changelog-new-release@v3
+        uses: thomaseizinger/keep-a-changelog-new-release@v3.1.0
         with:
           tag: ${{ steps.tag.outputs.tag }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.update_changelog.outputs.release-notes }}
+          draft: false
+          prerelease: false
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
