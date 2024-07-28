@@ -3,15 +3,15 @@ on:
   push:
     tags:
       - 'v*'
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
     name: Build And Push
     runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     permissions:
       contents: read
@@ -26,3 +26,39 @@ jobs:
         uses: ./.github/actions/docker
         with:
           publish: true
+    
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Update changelog
+        id: update_changelog
+        uses: thomaseizinger/keep-a-changelog-new-release@v2
+        with:
+          tag: ${{ github.ref }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.update_changelog.outputs.release-notes }}
+          draft: false
+          prerelease: false
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "[ci-skip] release: ${{ github.ref }}"
+          branch: master
