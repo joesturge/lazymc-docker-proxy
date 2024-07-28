@@ -5,7 +5,7 @@ edition = "2021"
 rust-version = "1.74.0"
 
 [dependencies]
-bollard = "0.16.1"
+bollard = "0.17.0"
 clap = { version = "4.5.11", features = ["derive"] }
 ctrlc = { version = "3.4.4", features = ["termination"] }
 futures = "0.3.30"
