@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- bats integration test
+
 ## [0.1.6] - 2024-07-28
 
 ### Fixed
