@@ -21,7 +21,7 @@ services:
       - lazymc.group=mc
     tty: true
     stdin_open: true
-    restart: 'no'
+    restart: "no"
     environment:
       EULA: "TRUE"
     volumes:
