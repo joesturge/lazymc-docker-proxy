@@ -49,7 +49,7 @@ jobs:
 
       - name: Update changelog
         id: update_changelog
-        uses: thomaseizinger/keep-a-changelog-new-release@v2
+        uses: thomaseizinger/keep-a-changelog-new-release@v3
         with:
           tag: ${{ steps.tag.outputs.tag }}
 
@@ -70,5 +70,6 @@ jobs:
         with:
           title: Release ${{ github.ref_name }}
           branch: release/${{ github.ref_name }}
+          labels: release
           commit-message: "[ci skip] update changelog for ${{ github.ref_name }}"
           body: This PR was created by the release workflow.
