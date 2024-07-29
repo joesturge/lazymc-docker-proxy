@@ -33,7 +33,7 @@ COPY src ./src
 RUN cargo build --release --locked
 
 # Use an official Eclipse Temurin image as the base
-FROM eclipse-temurin:19-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 # setup lazymc version
 ARG LAZYMC_VERSION
