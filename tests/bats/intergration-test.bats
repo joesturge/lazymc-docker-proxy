@@ -6,22 +6,22 @@ wait_for_log() {
     local logline=$2
     local timeout=${3:-60}
 
-    timeout ${timeout}s bash -c "until docker compose logs --no-color ${container} | grep -q '${logline}'; do sleep 1; done"
+    timeout ${timeout}s bash -c "until docker compose --project-directory ./tests/bats logs --no-color ${container} | grep -q '${logline}'; do sleep 1; done"
 }
 
 # before all tests
 setup() {
     echo "Building docker compose..." >&3
-    docker compose build
+    docker compose --project-directory ./tests/bats build
 
     echo "Starting docker compose..." >&3
-    docker compose up -d
+    docker compose --project-directory ./tests/bats up -d
 }
 
 # after all tests
 teardown() {
     echo "Stopping docker compose..." >&3
-    docker compose down
+    docker compose --project-directory ./tests/bats down
 }
 
 @test "Test lazymc stops server when idle" {
