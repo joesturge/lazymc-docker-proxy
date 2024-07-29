@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - bats integration test
+- contributing guide
+
+### Fixed
+
+- Integration tests
+- Inconsistencies in the docker compose examples
 
 ## [0.1.6] - 2024-07-28
 
