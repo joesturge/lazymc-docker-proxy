@@ -2,7 +2,7 @@
 ARG LAZYMC_VERSION=0.2.11
 
 # Use an official Rust image as the base
-FROM rust:1.74 as lazymc-builder
+FROM rust:1.80 as lazymc-builder
 
 # Install dependencies for compiling lazymc
 RUN apt-get update && apt-get install -y pkg-config libssl-dev
@@ -17,7 +17,7 @@ RUN git clone --branch v$LAZYMC_VERSION https://github.com/timvisee/lazymc . && 
     cargo build --release --locked
 
 # Use an official Rust image as the base
-FROM rust:1.75 as app-builder
+FROM rust:1.80 as app-builder
 
 # Install dependencies for compiling lazymc-docker-proxy
 RUN apt-get update && apt-get install -y pkg-config libssl-dev
