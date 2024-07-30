@@ -10,6 +10,8 @@ This project is also somewhat inspired by [lazytainer](https://github.com/vmorga
 
 # Usage
 
+## Vanilla minimal Example
+
 Here is a minimal Docker Compose example using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) as the server:
 
 ```yaml
@@ -55,12 +57,58 @@ volumes:
   data:
 ```
 
+## Forge 1.19.2
+
+```yaml
+services:
+  lazymc:
+    container_name: lazymc
+    environment:
+      SERVER_ADDRESS: mc:25565
+      LAZYMC_GROUP: mc
+      # The minecraft client version of the forge server
+      PUBLIC_VERSION: 1.19.2
+      # The minecraft protocol version of the forge server
+      PUBLIC_PROTOCOL: 760
+      SERVER_FORGE: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data:/server:ro
+    ports:
+      - "25565:25565"
+    build: ../../../
+
+  mc:
+    image: itzg/minecraft-server:java21
+    container_name: mc
+    labels:
+      - lazymc.group=mc
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      # The minecraft client version
+      VERSION: "1.19.2"
+      RCON_PASSWORD: password
+      ONLINE_MODE: false
+    volumes:
+      - data:/data
+
+volumes:
+  data:
+```
+
 ## Environment Variables
 
 Here is a full list of the environment variables supported by this image (\* is required):
 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
+- **PUBLIC_VERSION** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+- **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information on this: https://minecraft.fandom.com/wiki/Protocol_version
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
 - **SERVER_BLOCK_BANNED_IPS** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **SERVER_DROP_BANNED_IPS** - Drop connections from banned IPs.
@@ -72,12 +120,11 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
 - **MOTD_STARTING** - MOTD, shown in the server browser when starting.
 - **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
-- **RCON_ENABLED** - Enable sleeping server through RCON.
-- **RCON_PORT** - Server RCON port. Must differ from public and server port.
-- **RCON_PASSWORD** - Server RCON password.
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
 
 > Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
+
+> Note: `rcon` configurations are not supported as this app relies on the SIGTERM signal to stop the server.
 
 If you want more details or have issues, you can also refer to the lazymc [documentation](https://github.com/timvisee/lazymc/tree/master).
 
