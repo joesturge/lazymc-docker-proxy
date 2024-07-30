@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  lazymc-legacy-forge:
+    container_name: lazymc-legacy-forge
+    environment:
+      SERVER_ADDRESS: mc-legacy-forge:25565
+      LAZYMC_GROUP: mc
+      TIME_SLEEP_AFTER: 5
+      TIME_MINIMUM_ONLINE_TIME: 30
+      PUBLIC_VERSION: 1.19.2
+      PUBLIC_PROTOCOL: 760
+      SERVER_FORGE: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data:/server:ro
+    ports:
+      - "25565:25565"
+    build: ../../../
+
+  mc-legacy-forge:
+    image: itzg/minecraft-server:java21
+    container_name: mc-legacy-forge
+    labels:
+      - lazymc.group=mc
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      VERSION: "1.19.2"
+      RCON_PASSWORD: password
+      ONLINE_MODE: false
+    volumes:
+      - data:/data
+
+volumes:
+  data:

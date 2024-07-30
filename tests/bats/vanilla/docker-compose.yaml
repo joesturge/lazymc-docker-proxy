@@ -1,10 +1,10 @@
 version: '3.7'
 
 services:
-  lazymc:
-    container_name: lazymc
+  lazymc-vanilla:
+    container_name: lazymc-vanilla
     environment:
-      SERVER_ADDRESS: mc:25565
+      SERVER_ADDRESS: mc-vanilla:25565
       LAZYMC_GROUP: mc
       TIME_SLEEP_AFTER: 5
       TIME_MINIMUM_ONLINE_TIME: 30
@@ -14,11 +14,11 @@ services:
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../
+    build: ../../../
 
-  mc:
+  mc-vanilla:
     image: itzg/minecraft-server:java21
-    container_name: mc
+    container_name: mc-vanilla
     labels:
       - lazymc.group=mc
     tty: true
@@ -26,6 +26,7 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
+      RCON_PASSWORD: password
     volumes:
       - data:/data
 
