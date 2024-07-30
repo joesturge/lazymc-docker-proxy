@@ -10,6 +10,8 @@ This project is also somewhat inspired by [lazytainer](https://github.com/vmorga
 
 # Usage
 
+## Vanilla minimal Example
+
 Here is a minimal Docker Compose example using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) as the server:
 
 ```yaml
@@ -48,6 +50,50 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
+    volumes:
+      - data:/data
+
+volumes:
+  data:
+```
+
+## Forge 1.19.2
+
+```yaml
+services:
+  lazymc:
+    container_name: lazymc
+    environment:
+      SERVER_ADDRESS: mc:25565
+      LAZYMC_GROUP: mc
+      # The minecraft client version of the forge server
+      PUBLIC_VERSION: 1.19.2
+      # The minecraft protocol version of the forge server
+      PUBLIC_PROTOCOL: 760
+      SERVER_FORGE: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data:/server:ro
+    ports:
+      - "25565:25565"
+    build: ../../../
+
+  mc:
+    image: itzg/minecraft-server:java21
+    container_name: mc
+    labels:
+      - lazymc.group=mc
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      # The minecraft client version
+      VERSION: "1.19.2"
+      RCON_PASSWORD: password
+      ONLINE_MODE: false
     volumes:
       - data:/data
 

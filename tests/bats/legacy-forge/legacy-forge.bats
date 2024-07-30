@@ -35,7 +35,7 @@ teardown() {
 
     # wait for the server to be online
     echo "Waiting for server to be online..." >&3
-    wait_for_log "lazymc-legacy-forge" "INFO  lazymc::monitor > Server is now online"
+    wait_for_log "lazymc-legacy-forge" "INFO  lazymc::monitor > Server is now online" 300
 
     # wait for the mincraft server to be ready
     echo "Waiting for minecraft server to be ready..." >&3
