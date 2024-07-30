@@ -63,6 +63,7 @@ volumes:
 services:
   lazymc:
     container_name: lazymc
+    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     environment:
       SERVER_ADDRESS: mc:25565
       LAZYMC_GROUP: mc
@@ -77,7 +78,6 @@ services:
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../../
 
   mc:
     image: itzg/minecraft-server:java21
