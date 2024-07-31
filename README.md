@@ -92,8 +92,6 @@ services:
       TYPE: FORGE
       # The minecraft client version
       VERSION: "1.19.2"
-      RCON_PASSWORD: password
-      ONLINE_MODE: false
     volumes:
       - data:/data
 
