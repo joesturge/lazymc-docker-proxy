@@ -59,7 +59,7 @@ struct Config {
     time: TimeSection,
 }
 
-pub fn generate() {
+pub fn generate(is_legacy: bool) {
     info!(target: "lazymc-docker-proxy::config", "Generating lazymc.toml...");
 
     let server_section: ServerSection = ServerSection {
@@ -123,12 +123,20 @@ pub fn generate() {
     };
 
     let config_section: ConfigSection = ConfigSection {
-        version: var("LAZYMC_VERSION")
-        .unwrap_or_else(|err| {
-            error!(target: "lazymc-docker-proxy::config", "LAZYMC_VERSION is not set: {}", err);
-            exit(1);
-        })
-        .into(),
+        version: match is_legacy {
+            true => var("LAZYMC_LEGACY_VERSION")
+                .unwrap_or_else(|err| {
+                    error!(target: "lazymc-docker-proxy::config", "LAZYMC_LEGACY_VERSION is not set: {}", err);
+                    exit(1);
+                })
+                .into(),
+            false => var("LAZYMC_VERSION")
+                .unwrap_or_else(|err| {
+                    error!(target: "lazymc-docker-proxy::config", "LAZYMC_VERSION is not set: {}", err);
+                    exit(1);
+                })
+                .into(),
+        },
     };
 
     let config: Config = Config {
