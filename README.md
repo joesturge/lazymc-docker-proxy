@@ -106,7 +106,7 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
 - **PUBLIC_VERSION** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information on this: https://minecraft.fandom.com/wiki/Protocol_version
+- **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
 - **SERVER_BLOCK_BANNED_IPS** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **SERVER_DROP_BANNED_IPS** - Drop connections from banned IPs.
