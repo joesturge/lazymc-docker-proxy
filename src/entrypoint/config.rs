@@ -170,5 +170,5 @@ pub fn generate(is_legacy: bool) {
     });
 
     info!(target: "lazymc-docker-proxy::config", "Successfully generated lazymc.toml");
-    debug!(target: "lazymc-docker-proxy::config", "lazymc.toml: {}", &toml_string);
+    debug!(target: "lazymc-docker-proxy::config", "lazymc.toml: \n\n{}", &toml_string);
 }
