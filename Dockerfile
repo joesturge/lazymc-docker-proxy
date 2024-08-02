@@ -1,6 +1,6 @@
 # setup lazymc versions
 ARG LAZYMC_VERSION=0.2.11
-ARG LAZYMC_VERSION_LEGACY=0.2.10
+ARG LAZYMC_LEGACY_VERSION=0.2.10
 
 # build lazymc
 FROM rust:1.80 as lazymc-builder
@@ -21,9 +21,9 @@ RUN apt update && apt install -y musl-tools musl-dev
 RUN update-ca-certificates
 RUN apt-get update && apt-get install -y pkg-config libssl-dev
 WORKDIR /usr/src/lazymc
-ARG LAZYMC_VERSION_LEGACY
-ENV LAZYMC_VERSION_LEGACY=$LAZYMC_VERSION_LEGACY
-RUN git clone --branch v$LAZYMC_VERSION_LEGACY https://github.com/timvisee/lazymc .
+ARG LAZYMC_LEGACY_VERSION
+ENV LAZYMC_LEGACY_VERSION=$LAZYMC_LEGACY_VERSION
+RUN git clone --branch v$LAZYMC_LEGACY_VERSION https://github.com/timvisee/lazymc .
 RUN cargo build --target x86_64-unknown-linux-musl --release --locked
 
 # build this app
@@ -43,8 +43,8 @@ FROM scratch
 # setup lazymc version
 ARG LAZYMC_VERSION
 ENV LAZYMC_VERSION=$LAZYMC_VERSION
-ARG LAZYMC_VERSION_LEGACY
-ENV LAZYMC_VERSION_LEGACY=$LAZYMC_VERSION_LEGACY
+ARG LAZYMC_LEGACY_VERSION
+ENV LAZYMC_LEGACY_VERSION=$LAZYMC_LEGACY_VERSION
 
 # Copy the compiled binary from the lazymc-builder stage
 COPY --from=lazymc-builder /usr/src/lazymc/target/x86_64-unknown-linux-musl/release/lazymc /usr/local/bin/lazymc

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed 
+
+- legacy lazymc version is now set correctly in lazymc.toml
+
 ## [2.0.1] - 2024-07-31
 
 ### Build
