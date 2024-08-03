@@ -1,4 +1,4 @@
-use std::{clone, process, thread, time::Duration};
+use std::{process, thread, time::Duration};
 
 mod docker;
 
