@@ -107,21 +107,21 @@ This was done so that in the future, it would be possible to manage and proxy to
 Here is the list of the supported container labels which can be added to the minecraft server container
 which will be picked up by `lazymc-docker-proxy` (\* is required):
 
-**\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
-**\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
-**lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
-**lazymc.motd.starting** - MOTD, shown in the server browser when starting.
-**lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
-**lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-**lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-**lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
-**lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
-**lazymc.server.forge** - Drop connections from banned IPs.
-**lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
-**lazymc.server.send_proxy_v2** - Set to true if this server runs Forge.
-**lazymc.server.wake_whitelist** - Add HAProxy v2 header to proxied connections.
-**lazymc.time.minimum_online_time** - Sleep after a number of seconds.
-**lazymc.time.sleep_after** - Minimum time in seconds to stay online when the server is started.
+- **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
+- **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
+- **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
+- **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
+- **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
+- **lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+- **lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
+- **lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
+- **lazymc.server.forge** - Drop connections from banned IPs.
+- **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
+- **lazymc.server.send_proxy_v2** - Set to true if this server runs Forge.
+- **lazymc.server.wake_whitelist** - Add HAProxy v2 header to proxied connections.
+- **lazymc.time.minimum_online_time** - Sleep after a number of seconds.
+- **lazymc.time.sleep_after** - Minimum time in seconds to stay online when the server is started.
 
 > Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
 
@@ -168,7 +168,7 @@ Thanks for wanting to contribute! Please read the [contributing guidelines](CONT
 
 To develop changes fork this repo and ensure you have the following installed:
 
-- [rust](https://www.rust-lang.org/tools/install) (^1.75)
+- [rust](https://www.rust-lang.org/tools/install)
 - [docker + docker compose](https://docs.docker.com/get-docker/)
 - [bats testing](https://bats-core.readthedocs.io/en/stable/installation.html)
 
