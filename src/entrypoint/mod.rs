@@ -1,11 +1,18 @@
 mod config;
+mod docker;
 
 use config::Config;
 use std::process::{self, exit, ExitStatus};
 
 pub fn run() {
-    // Generate the lazymc config
-    let config: Config = Config::from_env();
+    // Generate the lazymc config either from labels if set or from env
+    let config: Config;
+    let container_labels = docker::get_container_labels();
+    if container_labels.is_none() {
+        config = Config::from_env()
+    } else {
+        config = Config::from_container_labels(container_labels.unwrap());
+    }
 
     info!(target: "lazymc-docker-proxy::entrypoint", "Starting lazymc process...");
     let mut child: process::Child = config.start_command()

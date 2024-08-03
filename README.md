@@ -19,11 +19,6 @@ services:
   lazymc:
     container_name: lazymc
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
-    environment:
-      # Point to the service name of the Minecraft server
-      SERVER_ADDRESS: mc:25565
-      # Required to find the container to manage it
-      LAZYMC_GROUP: mc
     restart: unless-stopped
     volumes:
       # you should mount the minecraft server dir under /server, using read only.
@@ -42,7 +37,12 @@ services:
     # We need to add a label here so that lazymc-docker-proxy knows which
     # container to manage
     labels:
+      # Set lazymc.enabled to true to enable lazymc on this container
+      - lazymc.enabled=true
+      # Required to find the container to manage it
       - lazymc.group=mc
+      # Point to the service name of the Minecraft server
+      - lazymc.server.address=mc:25565
     tty: true
     stdin_open: true
     # This container should be managed solely by the lazymc container
@@ -64,14 +64,6 @@ services:
   lazymc:
     container_name: lazymc
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
-    environment:
-      SERVER_ADDRESS: mc:25565
-      LAZYMC_GROUP: mc
-      # The minecraft client version of the forge server
-      PUBLIC_VERSION: 1.19.2
-      # The minecraft protocol version of the forge server
-      PUBLIC_PROTOCOL: 760
-      SERVER_FORGE: true
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -83,7 +75,15 @@ services:
     image: itzg/minecraft-server:java21
     container_name: mc
     labels:
+      - lazymc.enabled=true
       - lazymc.group=mc
+      - lazymc.server.address=mc:25565
+      # The minecraft client version of the forge server
+      - lazymc.public.version=1.19.2
+      # The minecraft protocol version of the forge server
+      - lazymc.public.protocol=760
+      # Set to true on a forge server
+      - lazymc.server.forge=true
     tty: true
     stdin_open: true
     restart: no
@@ -99,12 +99,55 @@ volumes:
   data:
 ```
 
+## Configuration using labels
+
+The suggested way to manage the lazymc settings on your minecraft containers is to use container labels.
+This was done so that in the future, it would be possible to manage and proxy to multiple servers.
+
+Here is the list of the supported container labels which can be added to the minecraft server container
+which will be picked up by `lazymc-docker-proxy` (\* is required):
+
+**\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
+**\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
+**lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
+**lazymc.motd.starting** - MOTD, shown in the server browser when starting.
+**lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
+**lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+**lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+**lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
+**lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
+**lazymc.server.forge** - Drop connections from banned IPs.
+**lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
+**lazymc.server.send_proxy_v2** - Set to true if this server runs Forge.
+**lazymc.server.wake_whitelist** - Add HAProxy v2 header to proxied connections.
+**lazymc.time.minimum_online_time** - Sleep after a number of seconds.
+**lazymc.time.sleep_after** - Minimum time in seconds to stay online when the server is started.
+
+> Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
+
+> Note: `rcon` configurations are not supported as this app relies on the SIGTERM signal to stop the server.
+
+If you want more details or have issues, you can also refer to the lazymc [documentation](https://github.com/timvisee/lazymc/tree/master).
+
+Also, refer to the lazymc [config example](https://github.com/timvisee/lazymc/blob/master/res/lazymc.toml). You may notice that the environment variables are named in the same way. This is intentional...
+
 ## Environment Variables
+
+You can enable debug logging using the `RUST_LOG` env var.
+
+- **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
+
+### Deprecated
+
+> ⚠️ Using environment variables to configure the server is deprecated and will be removed in the next release, please use container labels on the minecraft server instead. These are still available for the time being.
 
 Here is a full list of the environment variables supported by this image (\* is required):
 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
+- **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
+- **MOTD_STARTING** - MOTD, shown in the server browser when starting.
+- **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
 - **PUBLIC_VERSION** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
@@ -115,18 +158,7 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **SERVER_SEND_PROXY_V2** - Add HAProxy v2 header to proxied connections.
 - **TIME_SLEEP_AFTER** - Sleep after a number of seconds.
 - **TIME_MINIMUM_ONLINE_TIME** - Minimum time in seconds to stay online when the server is started.
-- **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
-- **MOTD_STARTING** - MOTD, shown in the server browser when starting.
-- **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
-
-> Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
-
-> Note: `rcon` configurations are not supported as this app relies on the SIGTERM signal to stop the server.
-
-If you want more details or have issues, you can also refer to the lazymc [documentation](https://github.com/timvisee/lazymc/tree/master).
-
-Also, refer to the lazymc [config example](https://github.com/timvisee/lazymc/blob/master/res/lazymc.toml). You may notice that the environment variables are named in the same way. This is intentional...
 
 # Development
 

@@ -3,11 +3,6 @@ version: '3.7'
 services:
   lazymc-vanilla:
     container_name: lazymc-vanilla
-    environment:
-      SERVER_ADDRESS: mc-vanilla:25565
-      LAZYMC_GROUP: mc
-      TIME_SLEEP_AFTER: 5
-      TIME_MINIMUM_ONLINE_TIME: 30
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -20,7 +15,11 @@ services:
     image: itzg/minecraft-server:java21
     container_name: mc-vanilla
     labels:
+      - lazymc.enabled=true
       - lazymc.group=mc
+      - lazymc.server.address=mc-vanilla:25565
+      - lazymc.time.minimum_online_time=30
+      - lazymc.time.sleep_after=5
     tty: true
     stdin_open: true
     restart: no

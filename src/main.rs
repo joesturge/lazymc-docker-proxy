@@ -14,6 +14,10 @@ struct Args {
     /// Execute with this flag when running as a lazymc start command
     #[arg(short, long)]
     command: bool,
+
+    /// The lazymc group name
+    #[arg(short, long, requires_if("command", "true"))]
+    group: Option<String>,
 }
 
 fn main() {
@@ -22,7 +26,7 @@ fn main() {
     let args: Args = Args::parse();
 
     if args.command {
-        command::run();
+        command::run(args.group.clone().unwrap());
     } else {
         entrypoint::run();
     }
