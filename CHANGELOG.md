@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- use container labels on the minecraft server to configure `lazymc-docker-proxy`
+
+### Deprecated
+
+- using Environment Variables to configure lazymc is deprecated. This change is vital for handling multiple servers in the future.
+
 ## [2.0.2] - 2024-08-02
 
 ### Fixed
