@@ -1,0 +1,55 @@
+services:
+  lazymc-vanilla:
+    container_name: lazymc-vanilla
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data-1:/server/mc1:ro
+      - data-2:/server/mc2:ro
+    ports:
+      - "25565:25565"
+      - "25566:25566"
+    build: ../../../
+
+  mc-vanilla-1:
+    image: itzg/minecraft-server:java21
+    container_name: mc-vanilla-1
+    labels:
+      - lazymc.enabled=true
+      - lazymc.group=mc1
+      - lazymc.server.address=mc-vanilla-1:25565
+      - lazymc.server.directory=/server/mc1
+      - lazymc.time.minimum_online_time=30
+      - lazymc.time.sleep_after=5
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+      RCON_PASSWORD: password
+    volumes:
+      - data-1:/data
+
+  mc-vanilla-2:
+    image: itzg/minecraft-server:java21
+    container_name: mc-vanilla-2
+    labels:
+      - lazymc.enabled=true
+      - lazymc.group=mc2
+      - lazymc.port=25566
+      - lazymc.server.address=mc-vanilla-2:25565
+      - lazymc.server.directory=/server/mc2
+      - lazymc.time.minimum_online_time=30
+      - lazymc.time.sleep_after=5
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+      RCON_PASSWORD: password
+    volumes:
+      - data-2:/data
+
+volumes:
+  data-1:
+  data-2:

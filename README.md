@@ -110,12 +110,14 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **\*lazymc.enabled=true** - Enable this to inform `lazymc-docker-proxy` that this container should be managed.
 - **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
+- **lazymc.port** - The internal port which is opened by lazymc to proxy to the server. Defaults to `25565`.
 - **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
 - **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
 - **lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
+- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server. Defaults to `/server`.
+- **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server
 - **lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **lazymc.server.forge** - Drop connections from banned IPs.
 - **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
@@ -146,6 +148,7 @@ Here is a full list of the environment variables supported by this image (\* is 
 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
+- **LAZYMC_PORT** - The internal port which is opened by lazymc to proxy to the server. Defaults to `25565`.
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
 - **MOTD_STARTING** - MOTD, shown in the server browser when starting.
 - **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
@@ -153,6 +156,7 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
 - **SERVER_BLOCK_BANNED_IPS** - Block banned IPs as listed in banned-ips.json in the server directory.
+- **SERVER_DIRECTORY** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
 - **SERVER_DROP_BANNED_IPS** - Drop connections from banned IPs.
 - **SERVER_PROBE_ON_START** - Probe required server details when starting lazymc, wakes server on start.
 - **SERVER_FORGE** - Set to true if this server runs Forge.

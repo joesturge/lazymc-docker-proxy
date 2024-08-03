@@ -7,6 +7,8 @@ use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
 
+const DEFAULT_PORT: i32 = 25565;
+
 /// lazymc dropped support minecraft servers with version less than 1.20.3
 fn is_legacy(version: Option<String>) -> bool {
     if version.is_none() {
@@ -34,6 +36,7 @@ struct ServerSection {
 
 #[derive(Serialize, Deserialize)]
 struct PublicSection {
+    address: Option<String>,
     version: Option<String>,
     protocol: Option<i32>,
 }
@@ -86,6 +89,10 @@ impl Config {
         return command;
     }
 
+    pub fn group(&self) -> &str {
+        &self.group
+    }
+
     fn as_toml_string(&self) -> String {
         toml::to_string(self).unwrap()
     }
@@ -112,7 +119,12 @@ impl Config {
 
         let server_section: ServerSection = ServerSection {
             address: labels.get("lazymc.server.address").cloned(),
-            directory: Some("/server".to_string()),
+            directory: Some(
+                labels
+                    .get("lazymc.server.directory")
+                    .cloned()
+                    .unwrap_or_else(|| "/server".to_string()),
+            ),
             command: Some(format!(
                 "lazymc-docker-proxy --command --group {}",
                 labels.get("lazymc.group").unwrap()
@@ -148,6 +160,13 @@ impl Config {
         };
 
         let public_section: PublicSection = PublicSection {
+            address: Some(format!(
+                "0.0.0.0:{}",
+                labels
+                    .get("lazymc.port")
+                    .cloned()
+                    .unwrap_or_else(|| DEFAULT_PORT.to_string())
+            )),
             version: labels.get("lazymc.public.version").cloned(),
             protocol: labels
                 .get("lazymc.public.protocol")
@@ -216,6 +235,9 @@ impl Config {
         if let Ok(value) = var("LAZYMC_GROUP") {
             labels.insert("lazymc.group".to_string(), value);
         }
+        if let Ok(value) = var("LAZYMC_PORT") {
+            labels.insert("lazymc.port".to_string(), value);
+        }
         if let Ok(value) = var("MOTD_SLEEPING") {
             labels.insert("lazymc.motd.sleeping".to_string(), value);
         }
@@ -236,6 +258,9 @@ impl Config {
         }
         if let Ok(value) = var("SERVER_BLOCK_BANNED_IPS") {
             labels.insert("lazymc.server.block_banned_ips".to_string(), value);
+        }
+        if let Ok(value) = var("SERVER_DIRECTORY") {
+            labels.insert("lazymc.server.directory".to_string(), value);
         }
         if let Ok(value) = var("SERVER_DROP_BANNED_IPS") {
             labels.insert("lazymc.server.drop_banned_ips".to_string(), value);

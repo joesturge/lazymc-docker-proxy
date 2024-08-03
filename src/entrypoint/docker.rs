@@ -7,7 +7,7 @@ use futures::FutureExt;
 use log::error;
 use tokio::runtime::Runtime;
 
-pub fn get_container_labels() -> Option<HashMap<String, String>> {
+pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::String>> {
     let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
         error!(target: "lazymc-docker-proxy::entrypoint::docker", "Error connecting to docker: {}", err);
         exit(1)
@@ -33,13 +33,15 @@ pub fn get_container_labels() -> Option<HashMap<String, String>> {
             }),
     );
 
-    if let Some(container) = containers.first() {
+    let mut label_sets: Vec<HashMap<String, String>> = Vec::new();
+
+    for container in containers {
         let mut labels: HashMap<String, String> = HashMap::new();
         for (key, value) in container.labels.as_ref().unwrap() {
             labels.insert(key.clone(), value.clone());
         }
-        return Some(labels);
+        label_sets.push(labels);
     }
 
-    return None;
+    return label_sets;
 }
