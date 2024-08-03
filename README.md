@@ -107,6 +107,7 @@ This was done so that in the future, it would be possible to manage and proxy to
 Here is the list of the supported container labels which can be added to the minecraft server container
 which will be picked up by `lazymc-docker-proxy` (\* is required):
 
+- **\*lazymc.enabled=true** - Enable this to inform `lazymc-docker-proxy` that this container should be managed.
 - **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
 - **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
