@@ -27,7 +27,7 @@ teardown() {
 @test "Legacy Forge - Test lazymc stops server when idle" {
     # wait for lazymc process to start
     echo "Waiting for lazymc process to start..." >&3
-    wait_for_log "lazymc-legacy-forge" "INFO  lazymc-docker-proxy::entrypoint         > Starting lazymc process..." 300
+    wait_for_log "lazymc-legacy-forge" "INFO  lazymc-docker-proxy::entrypoint         > Starting lazymc process..."
 
     # wait for lazymc to start the server
     echo "Waiting for server to start..." >&3
