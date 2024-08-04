@@ -28,6 +28,8 @@ wait_for_formatted_log() {
     local timeout=${5:-60}
 
     local regex="${level}\s+${target}\s+>\s+${logline}"
+
+    echo "Waiting: $container | $level $target > $logline" >&3
     
     trap 'exit 1' SIGINT SIGTERM
     until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -qE "$regex";
@@ -46,6 +48,8 @@ wait_for_log() {
     local container=$1
     local logline=$2
     local timeout=${3:-60}
+
+    echo "Waiting: $container | $logline" >&3
     
     trap 'exit 1' SIGINT SIGTERM
     until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -q "$logline";
