@@ -62,7 +62,8 @@ This container can also proxy to and control multiple containers at once. You co
 ```yaml
 # You can use mc-router to route external traffic to your servers via lazymc
 services:
-  image: itzg/mc-router
+  router: 
+    image: itzg/mc-router
     depends_on:
       - lazymc
     environment:
@@ -137,7 +138,6 @@ volumes:
   data-primary:
   # volume for secondary server
   data-secondary:
-
 ```
 
 ## Forge 1.19.2

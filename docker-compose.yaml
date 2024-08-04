@@ -1,40 +1,90 @@
 services:
   lazymc:
     container_name: lazymc
-    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    networks:
+      minecraft-network:
+    build: .
     restart: unless-stopped
+    environment:
+      RUST_LOG: "trace"
     volumes:
-      # you should mount the minecraft server dir under /server, using read only.
-      - data:/server:ro
-      # you need to supply the docker socket, so that the container can run docker command
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # primary server volume mount, should match the label
+      - data-primary:/server/primary:ro
+      # secondary server volume mount, should match the label
+      - data-secondary:/server/secondary:ro
     ports:
-      # lazymc-docker-proxy acts as a proxy, so there is
-      # no need to expose the server port on the Minecraft container
+      # If you are using mc-router you don't actually need
+      # to expose these port, but these ports match the ports
+      # specified on the labels on the minecraft containers
       - "25565:25565"
+      - "25566:25566"
 
-  # Standard Docker Minecraft server, also works with other server types
-  mc:
+  primary:
+    container_name: primary
+    networks:
+      minecraft-network:
+        ipv4_address: 10.0.11.10
     image: itzg/minecraft-server:java21
-    container_name: minecraft-server
-    # We need to add a label here so that lazymc-docker-proxy knows which
-    # container to manage
     labels:
-      # Set lazymc.enabled to true to enable lazymc on this container
       - lazymc.enabled=true
-      # Required to find the container to manage it
-      - lazymc.group=mc
-      # Point to the service name of the Minecraft server
-      - lazymc.server.address=mc:25565
+      - lazymc.group=primary
+      - lazymc.server.address=primary:25565
+      - lazymc.time.minimum_online_time=10
+      - lazymc.time.sleep_after=5
+      # If using with multiple servers you should specify
+      # which port you want to this server to be accessible
+      # from on the lazymc-docker-proxy container
+      - lazymc.port=25565
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.server.directory=/server/primary
     tty: true
     stdin_open: true
-    # This container should be managed solely by the lazymc container
-    # so set restart to no, or else the container will start again...
     restart: no
     environment:
       EULA: "TRUE"
     volumes:
-      - data:/data
+      # mount the primary server volume
+      - data-primary:/data
+
+  secondary:
+    container_name: secondary
+    networks:
+      minecraft-network:
+        ipv4_address: 10.0.11.11
+    image: itzg/minecraft-server:java21
+    labels:
+      - lazymc.enabled=true
+      - lazymc.server.address=secondary:25565
+      - lazymc.group=secondary
+      - lazymc.time.minimum_online_time=10
+      - lazymc.time.sleep_after=5
+      # If using with multiple servers you should specify
+      # which port you want to this server to be accessible
+      # from on the lazymc-docker-proxy container
+      - lazymc.port=25566
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.server.directory=/server/secondary
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+    volumes:
+      # mount the secondary server volume
+      - data-secondary:/data
+
+networks:
+  minecraft-network:
+    driver: bridge    
+    ipam:
+      config:
+        - subnet: 10.0.11.0/24
 
 volumes:
-  data:
+  # volume for primary server
+  data-primary:
+  # volume for secondary server
+  data-secondary:
