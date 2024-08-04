@@ -45,6 +45,5 @@ project="./tests/bats/multi-server"
     wait_for_formatted_log "lazymc-multi-server" "INFO" "primary::lazymc::monitor" "Server is now sleeping"
 
     # wait for lazymc to put secondary to sleep
-    echo "Waiting for secondary server to be sleeping..." >&3
     wait_for_formatted_log "lazymc-multi-server" "INFO" "secondary::lazymc::monitor" "Server is now sleeping"
 }
