@@ -95,7 +95,8 @@ services:
       - lazymc.group=primary
       - lazymc.server.address=primary:25565
       # If using with multiple servers you should specify
-      # which path you have mounted the server volume on
+      # which port you want to this server to be accessible
+      # from on the lazymc-docker-proxy container
       - lazymc.port=25565
       # If using with multiple servers you should specify
       # which path you have mounted the server volume on
@@ -116,7 +117,8 @@ services:
       - lazymc.server.address=secondary:25565
       - lazymc.group=secondary
       # If using with multiple servers you should specify
-      # which path you have mounted the server volume on
+      # which port you want to this server to be accessible
+      # from on the lazymc-docker-proxy container
       - lazymc.port=25566
       # If using with multiple servers you should specify
       # which path you have mounted the server volume on
@@ -189,7 +191,7 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **\*lazymc.enabled=true** - Enable this to inform `lazymc-docker-proxy` that this container should be managed.
 - **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
-- **lazymc.port** - The internal port which is opened by lazymc to proxy to the server. Defaults to `25565`.
+- **lazymc.port** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
 - **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
 - **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
@@ -227,7 +229,7 @@ Here is a full list of the environment variables supported by this image (\* is 
 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
-- **LAZYMC_PORT** - The internal port which is opened by lazymc to proxy to the server. Defaults to `25565`.
+- **LAZYMC_PORT** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
 - **MOTD_STARTING** - MOTD, shown in the server browser when starting.
 - **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
