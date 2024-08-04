@@ -25,7 +25,6 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
-      RCON_PASSWORD: password
     volumes:
       - data:/data
 

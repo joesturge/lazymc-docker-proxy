@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+start_timestamp=""
+
 # before all tests
 setup() {
+    start_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
     echo "Building docker compose..." >&3
     docker compose --project-directory $project build
 
@@ -26,7 +30,7 @@ wait_for_formatted_log() {
     local regex="${level}\s+${target}\s+>\s+${logline}"
     
     trap 'exit 1' SIGINT SIGTERM
-    until docker compose --project-directory $project logs --no-color ${container} | grep -qE "$regex";
+    until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -qE "$regex";
     do
         if [ $timeout -eq 0 ]; then
             echo "Timeout waiting for log: $logline" >&3
@@ -44,7 +48,7 @@ wait_for_log() {
     local timeout=${3:-60}
     
     trap 'exit 1' SIGINT SIGTERM
-    until docker compose --project-directory $project logs --no-color ${container} | grep -q "$logline";
+    until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -q "$logline";
     do
         if [ $timeout -eq 0 ]; then
             echo "Timeout waiting for log: $logline" >&3

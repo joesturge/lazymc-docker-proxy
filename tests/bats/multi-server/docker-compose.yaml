@@ -1,24 +1,24 @@
 services:
-  lazymc-vanilla:
-    container_name: lazymc-vanilla
+  lazymc-multi-server:
+    container_name: lazymc-multi-server
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - data-1:/server/mc1:ro
-      - data-2:/server/mc2:ro
+      - data-primary:/server/primary:ro
+      - data-secondary:/server/secondary:ro
     ports:
       - "25565:25565"
       - "25566:25566"
     build: ../../../
 
-  mc-vanilla-1:
+  primary:
     image: itzg/minecraft-server:java21
-    container_name: mc-vanilla-1
+    container_name: primary
     labels:
       - lazymc.enabled=true
-      - lazymc.group=mc1
-      - lazymc.server.address=mc-vanilla-1:25565
-      - lazymc.server.directory=/server/mc1
+      - lazymc.group=primary
+      - lazymc.server.address=primary:25565
+      - lazymc.server.directory=/server/primary
       - lazymc.time.minimum_online_time=30
       - lazymc.time.sleep_after=5
     tty: true
@@ -26,19 +26,18 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
-      RCON_PASSWORD: password
     volumes:
-      - data-1:/data
+      - data-primary:/data
 
-  mc-vanilla-2:
+  secondary:
     image: itzg/minecraft-server:java21
-    container_name: mc-vanilla-2
+    container_name: secondary
     labels:
       - lazymc.enabled=true
-      - lazymc.group=mc2
+      - lazymc.group=secondary
       - lazymc.port=25566
-      - lazymc.server.address=mc-vanilla-2:25565
-      - lazymc.server.directory=/server/mc2
+      - lazymc.server.address=secondary:25565
+      - lazymc.server.directory=/server/secondary
       - lazymc.time.minimum_online_time=30
       - lazymc.time.sleep_after=5
     tty: true
@@ -46,10 +45,9 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
-      RCON_PASSWORD: password
     volumes:
-      - data-2:/data
+      - data-secondary:/data
 
 volumes:
-  data-1:
-  data-2:
+  data-primary:
+  data-secondary:

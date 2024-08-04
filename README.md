@@ -17,7 +17,6 @@ Here is a minimal Docker Compose example using [itzg/minecraft-server](https://g
 ```yaml
 services:
   lazymc:
-    container_name: lazymc
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     restart: unless-stopped
     volumes:
@@ -33,7 +32,6 @@ services:
   # Standard Docker Minecraft server, also works with other server types
   mc:
     image: itzg/minecraft-server:java21
-    container_name: minecraft-server
     # We need to add a label here so that lazymc-docker-proxy knows which
     # container to manage
     labels:
@@ -57,12 +55,94 @@ volumes:
   data:
 ```
 
+## Multiple server support
+
+This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
+
+```yaml
+# You can use mc-router to route external traffic to your servers via lazymc
+services:
+  image: itzg/mc-router
+    depends_on:
+      - lazymc
+    environment:
+      # Primary is exposed on port 25565
+      # Secondary is exposed on port 25566
+      MAPPING: |
+        primary.example.com=lazymc:25565
+        secondary.example.com=lazymc:25566
+
+  lazymc:
+    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # primary server volume mount, should match the label
+      - data-primary:/server/primary:ro
+      # secondary server volume mount, should match the label
+      - data-secondary:/server/secondary:ro
+    ports:
+      # If you are using mc-router you don't actually need
+      # to expose these port, but these ports match the ports
+      # specified on the labels on the minecraft containers
+      - "25565:25565"
+      - "25566:25566"
+
+  primary:
+    image: itzg/minecraft-server:java21
+    labels:
+      - lazymc.enabled=true
+      - lazymc.group=primary
+      - lazymc.server.address=primary:25565
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.port=25565
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.server.directory=/server/primary
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+    volumes:
+      # mount the primary server volume
+      - data-primary:/data
+
+  secondary:
+    image: itzg/minecraft-server:java21
+    labels:
+      - lazymc.enabled=true
+      - lazymc.server.address=secondary:25565
+      - lazymc.group=secondary
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.port=25566
+      # If using with multiple servers you should specify
+      # which path you have mounted the server volume on
+      - lazymc.server.directory=/server/secondary
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+    volumes:
+      # mount the secondary server volume
+      - data-secondary:/data
+
+volumes:
+  # volume for primary server
+  data-primary:
+  # volume for secondary server
+  data-secondary:
+
+```
+
 ## Forge 1.19.2
 
 ```yaml
 services:
   lazymc:
-    container_name: lazymc
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     restart: unless-stopped
     volumes:
@@ -73,7 +153,6 @@ services:
 
   mc:
     image: itzg/minecraft-server:java21
-    container_name: mc
     labels:
       - lazymc.enabled=true
       - lazymc.group=mc
@@ -116,8 +195,8 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
 - **lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
 - **lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server. Defaults to `/server`.
-- **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server
+- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
+- **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
 - **lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **lazymc.server.forge** - Drop connections from banned IPs.
 - **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
