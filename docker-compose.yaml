@@ -1,6 +1,6 @@
 services:
   lazymc:
-    build: .
+    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     restart: unless-stopped
     volumes:
       # you should mount the minecraft server dir under /server, using read only.

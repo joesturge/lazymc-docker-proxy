@@ -60,8 +60,8 @@ volumes:
 This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
 
 > ⚠️ When running multiple minecraft containers it is **very important** that you assign **static** IP Address to each container. 
-This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change. Which can happen when a container stops and start again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63
-As this is an issue with lazymc itself it is very likely that work around will never be found. Im open for suggestions on this.
+This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change. Which can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63
+As this is an issue with lazymc itself unlikely that a fix can be found. Im open for suggestions on this.
 
 ```yaml
 # Lazymc requires that the minecraft server have a static IP.
@@ -106,7 +106,7 @@ services:
       MAPPING: |
         primary.example.com=lazymc:25565
         secondary.example.com=lazymc:25566
-    # If using mc-router you only need to expose port 25564
+    # If using mc-router you only need to expose port 25565
     # on this container alone
     ports:
       - "25565:25565"
@@ -143,8 +143,6 @@ services:
       - lazymc.enabled=true
       - lazymc.group=primary
       - lazymc.server.address=primary:25565
-      - lazymc.time.minimum_online_time=10
-      - lazymc.time.sleep_after=5
       # If using with multiple servers you should specify
       # which port you want to this server to be accessible
       # from on the lazymc-docker-proxy container
@@ -171,8 +169,6 @@ services:
       - lazymc.enabled=true
       - lazymc.server.address=secondary:25565
       - lazymc.group=secondary
-      - lazymc.time.minimum_online_time=10
-      - lazymc.time.sleep_after=5
       # If using with multiple servers you should specify
       # which port you want to this server to be accessible
       # from on the lazymc-docker-proxy container
