@@ -236,7 +236,8 @@ volumes:
 ## Configuration using labels
 
 The suggested way to manage the lazymc settings on your minecraft containers is to use container labels.
-This was done so that in the future, it would be possible to manage and proxy to multiple servers.
+
+This allows you to manage multiple minecraft servers at once.
 
 Here is the list of the supported container labels which can be added to the minecraft server container
 which will be picked up by `lazymc-docker-proxy` (\* is required):
