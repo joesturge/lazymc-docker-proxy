@@ -60,8 +60,9 @@ volumes:
 This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
 
 > ⚠️ When running multiple minecraft containers it is **very important** that you assign **static** IP Address to each container. 
-This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change. Which can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63
-As this is an issue with lazymc itself unlikely that a fix can be found. Im open for suggestions on this.
+This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change,
+this can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63.
+As this is an issue with lazymc itself it is unlikely that a fix can be found. Im open to suggestions on this.
 
 ```yaml
 # Lazymc requires that the minecraft server have a static IP.
