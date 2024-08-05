@@ -332,14 +332,14 @@ It is good to also check this before committing to make sure you did not break t
 
 ## Testing
 
-There is a bats integration test for this application. Which performs the following:
+There are bats integration test for this application. Which each perform the following:
 
-1. Builds the docker compose file located at `test/bats/docker-compose.yaml`
-2. Starts the docker compose environment for this app and a minecraft container
-3. Waits for the minecraft server to start
-4. Waits for lazymc to stop the minecraft container
+1. Builds the docker compose file
+2. Starts the docker compose environment
+3. Waits for the minecraft container(s) to start
+4. Waits for lazymc to stop the minecraft container(s)
 
-This check is performed in using github actions on every commit
+These checks are performed in using github actions on every commit
 
 ## Changelog
 
