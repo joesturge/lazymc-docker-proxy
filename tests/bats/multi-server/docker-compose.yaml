@@ -1,0 +1,53 @@
+services:
+  lazymc-multi-server:
+    container_name: lazymc-multi-server
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - data-primary:/server/primary:ro
+      - data-secondary:/server/secondary:ro
+    ports:
+      - "25565:25565"
+      - "25566:25566"
+    build: ../../../
+
+  primary:
+    image: itzg/minecraft-server:java21
+    container_name: primary
+    labels:
+      - lazymc.enabled=true
+      - lazymc.group=primary
+      - lazymc.server.address=primary:25565
+      - lazymc.server.directory=/server/primary
+      - lazymc.time.minimum_online_time=30
+      - lazymc.time.sleep_after=5
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - data-primary:/data
+
+  secondary:
+    image: itzg/minecraft-server:java21
+    container_name: secondary
+    labels:
+      - lazymc.enabled=true
+      - lazymc.group=secondary
+      - lazymc.port=25566
+      - lazymc.server.address=secondary:25565
+      - lazymc.server.directory=/server/secondary
+      - lazymc.time.minimum_online_time=30
+      - lazymc.time.sleep_after=5
+    tty: true
+    stdin_open: true
+    restart: no
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - data-secondary:/data
+
+volumes:
+  data-primary:
+  data-secondary:

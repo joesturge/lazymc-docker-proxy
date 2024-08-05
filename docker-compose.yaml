@@ -1,6 +1,5 @@
 services:
   lazymc:
-    container_name: lazymc
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     restart: unless-stopped
     volumes:
@@ -16,7 +15,6 @@ services:
   # Standard Docker Minecraft server, also works with other server types
   mc:
     image: itzg/minecraft-server:java21
-    container_name: minecraft-server
     # We need to add a label here so that lazymc-docker-proxy knows which
     # container to manage
     labels:
