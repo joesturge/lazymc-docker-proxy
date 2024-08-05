@@ -59,42 +59,92 @@ volumes:
 
 This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
 
+> ⚠️ When running multiple minecraft containers it is **very important** that you assign **static** IP Address to each container. 
+This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change. Which can happen when a container stops and start again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63
+As this is an issue with lazymc itself it is very likely that work around will never be found. Im open for suggestions on this.
+
 ```yaml
-# You can use mc-router to route external traffic to your servers via lazymc
+# Lazymc requires that the minecraft server have a static IP.
+# This generally isn't a problem when running a single server
+# as the stopped container will usually start with same IP as before.
+#
+# To ensure that our servers have a static IP we need to create
+# a network for our services to use.
+#
+# By default, Docker uses 172.17.0.0/16 subnet range.
+# So we need to create a new network in a different subnet
+# See the readme for more information.
+#
+# Please ensure that the subnet falls within the private CIDRs:
+# https://datatracker.ietf.org/doc/html/rfc1918#section-3
+#
+# And that it is not in use by anything else.
+networks:
+  minecraft-network:
+    driver: bridge    
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
 services:
   router: 
+    # You can use mc-router to route external traffic to your
+    # servers via lazymc using the Host header.
+    #
+    # This allows you to run multiple servers on the same external port
     image: itzg/mc-router
+    # You need to assign a static IP to the mc-router container
+    # the IPs should start at .2 as .1 is reserved for the gateway
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.2
     depends_on:
       - lazymc
     environment:
-      # Primary is exposed on port 25565
-      # Secondary is exposed on port 25566
+      # Primary is exposed on port 25565 of lazymc
+      # Secondary is exposed on port 25566 of lazmc
       MAPPING: |
         primary.example.com=lazymc:25565
         secondary.example.com=lazymc:25566
+    # If using mc-router you only need to expose port 25564
+    # on this container alone
+    ports:
+      - "25565:25565"
 
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    # Assign a static IP to the lazymc container
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.3
     restart: unless-stopped
+    environment:
+      RUST_LOG: "trace"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # primary server volume mount, should match the label
       - data-primary:/server/primary:ro
       # secondary server volume mount, should match the label
       - data-secondary:/server/secondary:ro
-    ports:
-      # If you are using mc-router you don't actually need
-      # to expose these port, but these ports match the ports
-      # specified on the labels on the minecraft containers
-      - "25565:25565"
-      - "25566:25566"
+    # If you are using mc-router you don't actually need
+    # to expose these port, but these ports match the ports
+    # specified on the labels on the minecraft containers
+    # ports:
+    #  - "25565:25565"
+    #  - "25566:25566"
 
   primary:
     image: itzg/minecraft-server:java21
+    # Assign a static IP to the primary server container
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.4
     labels:
       - lazymc.enabled=true
       - lazymc.group=primary
       - lazymc.server.address=primary:25565
+      - lazymc.time.minimum_online_time=10
+      - lazymc.time.sleep_after=5
       # If using with multiple servers you should specify
       # which port you want to this server to be accessible
       # from on the lazymc-docker-proxy container
@@ -113,10 +163,16 @@ services:
 
   secondary:
     image: itzg/minecraft-server:java21
+    # Assign a static IP to the secondary server container
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.5
     labels:
       - lazymc.enabled=true
       - lazymc.server.address=secondary:25565
       - lazymc.group=secondary
+      - lazymc.time.minimum_online_time=10
+      - lazymc.time.sleep_after=5
       # If using with multiple servers you should specify
       # which port you want to this server to be accessible
       # from on the lazymc-docker-proxy container
