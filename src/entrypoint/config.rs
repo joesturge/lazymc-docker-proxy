@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::env::var;
 use std::fs::File;
 use std::io::Write;
+use std::net::ToSocketAddrs;
 use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
@@ -118,7 +119,14 @@ impl Config {
         });
 
         let server_section: ServerSection = ServerSection {
-            address: labels.get("lazymc.server.address").cloned(),
+            address: labels.get("lazymc.server.address")
+                .and_then(|address| address.to_socket_addrs().ok())
+                .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
+                .and_then(|addr| addr.to_string().parse().ok())
+                .or_else(|| {
+                    error!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address");
+                    exit(1);
+                }),
             directory: Some(
                 labels
                     .get("lazymc.server.directory")

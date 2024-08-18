@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::net::{SocketAddr, ToSocketAddrs};
 use std::process::exit;
 
 use bollard::container::ListContainersOptions;
@@ -69,17 +68,7 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
                 warn!(target: "lazymc-docker-proxy::entrypoint::docker", "WARNING: You should use IPAM to assign a static IP address to your server container otherwise performance may be degraded.");
                 warn!(target: "lazymc-docker-proxy::entrypoint::docker", "    see: https://github.com/joesturge/lazymc-docker-proxy?tab=readme-ov-file#usage");
                 warn!(target: "lazymc-docker-proxy::entrypoint::docker", "**************************************************************************************************************************");
-
-                // Attempt to resolve the IP address using the lazymc.server.address label and converting the domain to an ip address
-                return labels
-                    .get("lazymc.server.address")
-                    .and_then(|address| address.to_socket_addrs().ok())
-                    .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
-                    .and_then(|addr| addr.ip().to_string().parse().ok())
-                    .or_else(|| {
-                        warn!(target: "lazymc-docker-proxy::entrypoint::docker", "Failed to resolve IP address from lazymc.server.address label");
-                        None
-                    });
+                None
             });
 
         // if we have a port and an IP address, add the resolved address to the labels
