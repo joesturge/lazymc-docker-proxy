@@ -16,7 +16,7 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
 
-    // find all matching running containers which have labels starting with "lazymc."
+    // find all docker containers with the label "lazymc.enabled=true"
     list_container_filters.insert("label".to_string(), vec![format!("lazymc.enabled=true")]);
 
     // find all matching containers and then get their labels
@@ -40,6 +40,44 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
         for (key, value) in container.labels.as_ref().unwrap() {
             labels.insert(key.clone(), value.clone());
         }
+
+        // parse port from lazymc.server.address label
+        let port: Option<u16> = labels
+            .get("lazymc.server.address")
+            .and_then(|address| address.rsplit(':').next())
+            .and_then(|port_str| port_str.parse().ok());
+
+        // try to get the container's IP address from the ipam config as optional
+        let ip_address: Option<String> = container
+            .network_settings
+            .as_ref()
+            .and_then(|network_settings| {
+            network_settings
+                .networks
+                .as_ref()
+                .and_then(|networks| {
+                networks
+                    .values()
+                    .find(|network| network.ipam_config.is_some())
+                })
+                .and_then(|network| network.ipam_config.as_ref())
+                .and_then(|ipam_config| ipam_config.ipv4_address.clone())
+            })
+            .or_else(|| {
+                warn!(target: "lazymc-docker-proxy::entrypoint::docker", "**************************************************************************************************************************");
+                warn!(target: "lazymc-docker-proxy::entrypoint::docker", "WARNING: You should use IPAM to assign a static IP address to your server container otherwise performance may be degraded.");
+                warn!(target: "lazymc-docker-proxy::entrypoint::docker", "    see: https://github.com/joesturge/lazymc-docker-proxy?tab=readme-ov-file#usage");
+                warn!(target: "lazymc-docker-proxy::entrypoint::docker", "**************************************************************************************************************************");
+                None
+            });
+
+        // if we have a port and an IP address, add the resolved address to the labels
+        if port.is_some() && ip_address.is_some() {
+            let address = format!("{}:{}", ip_address.unwrap(), port.unwrap());
+            debug!(target: "lazymc-docker-proxy::entrypoint::docker", "Resolved address: {}", address);
+            labels.insert("lazymc.server.address".to_string(), address);
+        }
+
         label_sets.push(labels);
     }
 

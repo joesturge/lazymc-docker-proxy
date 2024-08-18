@@ -2,9 +2,14 @@
 
 start_timestamp=""
 
+# set up start timestamp
+reset_timestamp() {
+    start_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+}
+
 # before all tests
 setup() {
-    start_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    reset_timestamp
 
     echo "Building docker compose..." >&3
     docker compose --project-directory $project build
@@ -61,4 +66,18 @@ wait_for_log() {
         sleep 1
         ((timeout--))
     done
+}
+
+stop_container() {
+    local container=$1
+
+    echo "Stopping container: $container" >&3
+    docker compose --project-directory $project stop $container
+}
+
+restart_container() {
+    local container=$1
+
+    echo "Restarting container: $container" >&3
+    docker compose --project-directory $project restart $container
 }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use static IP in the lazymc.toml instead of hostname
+
+### Deprecated
+
+- The app will throw a warning if it notices you are not using a static ip for the minecraft container
+
 ## [2.2.0] - 2024-08-05
 
 ### Added

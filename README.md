@@ -14,10 +14,39 @@ This project is also somewhat inspired by [lazytainer](https://github.com/vmorga
 
 Here is a minimal Docker Compose example using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) as the server:
 
+> ⚠️ It is **very important** that you assign **static** IP Address to each container. 
+This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change,
+this can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63.
+As this is an issue with lazymc itself it is unlikely that a fix can be found. Im open to suggestions on this.
+
 ```yaml
+# Lazymc requires that the minecraft server have a static IP.
+#
+# To ensure that our servers have a static IP we need to create
+# a network for our services to use.
+#
+# By default, Docker uses 172.17.0.0/16 subnet range.
+# So we need to create a new network in a different subnet
+# See the readme for more information.
+#
+# Please ensure that the subnet falls within the private CIDRs:
+# https://datatracker.ietf.org/doc/html/rfc1918#section-3
+#
+# And that it is not in use by anything else.
+networks:
+  minecraft-network:
+    driver: bridge    
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
 services:
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    # the IPs should start at .2 as .1 is reserved for the gateway
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.2
     restart: unless-stopped
     volumes:
       # you should mount the minecraft server dir under /server, using read only.
@@ -32,6 +61,10 @@ services:
   # Standard Docker Minecraft server, also works with other server types
   mc:
     image: itzg/minecraft-server:java21
+    # Assign a static IP to the server container
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.3
     # We need to add a label here so that lazymc-docker-proxy knows which
     # container to manage
     labels:
@@ -59,27 +92,7 @@ volumes:
 
 This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
 
-> ⚠️ When running multiple minecraft containers it is **very important** that you assign **static** IP Address to each container. 
-This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change,
-this can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63.
-As this is an issue with lazymc itself it is unlikely that a fix can be found. Im open to suggestions on this.
-
 ```yaml
-# Lazymc requires that the minecraft server have a static IP.
-# This generally isn't a problem when running a single server
-# as the stopped container will usually start with same IP as before.
-#
-# To ensure that our servers have a static IP we need to create
-# a network for our services to use.
-#
-# By default, Docker uses 172.17.0.0/16 subnet range.
-# So we need to create a new network in a different subnet
-# See the readme for more information.
-#
-# Please ensure that the subnet falls within the private CIDRs:
-# https://datatracker.ietf.org/doc/html/rfc1918#section-3
-#
-# And that it is not in use by anything else.
 networks:
   minecraft-network:
     driver: bridge    
@@ -196,9 +209,19 @@ volumes:
 ## Forge 1.19.2
 
 ```yaml
+networks:
+  minecraft-network:
+    driver: bridge    
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
 services:
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.2
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -208,6 +231,9 @@ services:
 
   mc:
     image: itzg/minecraft-server:java21
+    networks:
+      minecraft-network:
+        ipv4_address: 172.18.0.3
     labels:
       - lazymc.enabled=true
       - lazymc.group=mc
@@ -243,7 +269,7 @@ Here is the list of the supported container labels which can be added to the min
 which will be picked up by `lazymc-docker-proxy` (\* is required):
 
 - **\*lazymc.enabled=true** - Enable this to inform `lazymc-docker-proxy` that this container should be managed.
-- **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
+- **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the internal Docker network address of the server container, such as `mc:25565` or the assigned static IP such as `172.18.0.3:25565`.
 - **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
 - **lazymc.port** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
 - **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
@@ -281,7 +307,7 @@ You can enable debug logging using the `RUST_LOG` env var.
 
 Here is a full list of the environment variables supported by this image (\* is required):
 
-- **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the Docker network address, such as `mc:25565`.
+- **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the internal Docker network address of the server container, such as `mc:25565` or the assigned static IP such as `172.18.0.3:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
 - **LAZYMC_PORT** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
