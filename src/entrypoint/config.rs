@@ -8,6 +8,8 @@ use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
 
+use crate::docker;
+
 const DEFAULT_PORT: i32 = 25565;
 
 /// lazymc dropped support minecraft servers with version less than 1.20.3
@@ -79,10 +81,17 @@ pub struct Config {
     config_file: String,
     #[serde(skip)]
     group: String,
+    #[serde(skip)]
+    resolved_ip: bool,
 }
 
 impl Config {
     pub fn start_command(&self) -> Command {
+        // Start the docker container if the IP address has not been resolved
+        if !self.resolved_ip {
+            docker::start(self.group().into());
+        }
+
         let mut command: Command = Command::new(self.start_command.clone());
         command.arg("start");
         command.arg("--config");
@@ -118,14 +127,18 @@ impl Config {
             exit(1);
         });
 
+        // Check if the IP address has been resolved
+        let mut resolved_ip = true;
+
         let server_section: ServerSection = ServerSection {
             address: labels.get("lazymc.server.address")
                 .and_then(|address| address.to_socket_addrs().ok())
                 .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
                 .and_then(|addr| addr.to_string().parse().ok())
                 .or_else(|| {
-                    error!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address");
-                    exit(1);
+                    warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address. Falling back to the value provided.");
+                    resolved_ip = false;
+                    labels.get("lazymc.server.address").cloned()
                 }),
             directory: Some(
                 labels
@@ -138,7 +151,8 @@ impl Config {
                 labels.get("lazymc.group").unwrap()
             )),
             freeze_process: Some(false),
-            wake_on_start: Some(true),
+            // If the IP address was not resolved, wake_on_start should be true
+            wake_on_start: Some(!resolved_ip),
             wake_on_crash: Some(true),
             wake_whitelist: labels
                 .get("lazymc.server.wake_whitelist")
@@ -224,6 +238,7 @@ impl Config {
                 labels.get("lazymc.group").unwrap().clone()
             ),
             group: labels.get("lazymc.group").unwrap().clone(),
+            resolved_ip,
         };
 
         // Generate the lazymc config file

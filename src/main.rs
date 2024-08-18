@@ -4,6 +4,7 @@ extern crate log;
 mod command;
 mod entrypoint;
 mod logging;
+mod docker;
 
 use clap::Parser;
 
