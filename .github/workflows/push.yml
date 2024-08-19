@@ -43,5 +43,5 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Run tests
-        run: bats ${{ matrix.inputs }}
+        run: bats ./tests/bats/${{ matrix.inputs }}
       
