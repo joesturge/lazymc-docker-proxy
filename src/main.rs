@@ -4,6 +4,7 @@ extern crate log;
 mod command;
 mod entrypoint;
 mod logging;
+mod docker;
 
 use clap::Parser;
 
@@ -20,6 +21,7 @@ struct Args {
     group: Option<String>,
 }
 
+/// Main entrypoint for the application
 fn main() {
     logging::init();
 

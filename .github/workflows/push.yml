@@ -3,15 +3,33 @@ on:
   push:
     branches:
         - '**'
-
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  find-tests:
+    name: Find Tests
+    runs-on: ubuntu-latest
+
+    outputs:
+      folders: ${{ steps.jobs.outputs.folders }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: jobs
+        uses: kmanimaran/list-folder-action@v4
+        with:
+          path: ./tests/bats
+
   test:
-    name: Integration Test
+    needs: [find-tests]
+    strategy:
+      matrix:
+        inputs: ${{fromJson(needs.find-tests.outputs.folders)}}
+
+    name: Run Bats Tests
     runs-on: ubuntu-latest
 
     permissions:
@@ -25,5 +43,5 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Run tests
-        run: bats -r .
+        run: bats ./tests/bats/${{ matrix.inputs }}
       

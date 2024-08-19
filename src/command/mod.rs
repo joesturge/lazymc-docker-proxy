@@ -1,9 +1,10 @@
 use std::{process, thread, time::Duration};
 
-mod docker;
+use crate::docker;
 
+/// Run the command to start a group
 pub fn run(group: String) {
-    info!(target: "lazymc-docker-proxy::command", "Starting server...");
+    info!(target: "lazymc-docker-proxy::command", "Received command to start group: {}", group);
     // Set a handler for SIGTERM
     let cloned_group = group.clone();
     ctrlc::set_handler(move || {

@@ -3,9 +3,12 @@ use std::collections::HashMap;
 use std::env::var;
 use std::fs::File;
 use std::io::Write;
+use std::net::ToSocketAddrs;
 use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
+
+use crate::docker;
 
 const DEFAULT_PORT: i32 = 25565;
 
@@ -78,10 +81,19 @@ pub struct Config {
     config_file: String,
     #[serde(skip)]
     group: String,
+    #[serde(skip)]
+    resolved_ip: bool,
 }
 
+/// Configuration for the lazymc server
 impl Config {
+    /// Generate the start command for the lazymc server
     pub fn start_command(&self) -> Command {
+        // Start the docker container if the IP address has not been resolved
+        if !self.resolved_ip {
+            docker::start(self.group().into());
+        }
+
         let mut command: Command = Command::new(self.start_command.clone());
         command.arg("start");
         command.arg("--config");
@@ -89,14 +101,17 @@ impl Config {
         return command;
     }
 
+    /// Get the group name for the lazymc server
     pub fn group(&self) -> &str {
         &self.group
     }
 
+    /// Convert the configuration to a TOML string
     fn as_toml_string(&self) -> String {
         toml::to_string(self).unwrap()
     }
 
+    /// Create the lazymc configuration file
     fn create_file(&self) {
         let toml = self.as_toml_string();
         let file_name: &String = &format!("lazymc.{}.toml", self.group.clone());
@@ -106,6 +121,7 @@ impl Config {
         debug!(target: "lazymc-docker-proxy::entrypoint::config", "`generated`: {}\n\n{}", path.display(), toml);
     }
 
+    /// Create a new configuration from container labels
     pub fn from_container_labels(labels: HashMap<String, String>) -> Self {
         // Check for required labels
         labels.get("lazymc.server.address").unwrap_or_else(|| {
@@ -117,8 +133,19 @@ impl Config {
             exit(1);
         });
 
+        // Check if the IP address has been resolved
+        let mut resolved_ip = true;
+
         let server_section: ServerSection = ServerSection {
-            address: labels.get("lazymc.server.address").cloned(),
+            address: labels.get("lazymc.server.address")
+                .and_then(|address| address.to_socket_addrs().ok())
+                .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
+                .and_then(|addr| addr.to_string().parse().ok())
+                .or_else(|| {
+                    warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address. Falling back to the value provided.");
+                    resolved_ip = false;
+                    labels.get("lazymc.server.address").cloned()
+                }),
             directory: Some(
                 labels
                     .get("lazymc.server.directory")
@@ -130,7 +157,8 @@ impl Config {
                 labels.get("lazymc.group").unwrap()
             )),
             freeze_process: Some(false),
-            wake_on_start: Some(true),
+            // If the IP address was not resolved, wake_on_start should be true
+            wake_on_start: Some(!resolved_ip),
             wake_on_crash: Some(true),
             wake_whitelist: labels
                 .get("lazymc.server.wake_whitelist")
@@ -216,6 +244,7 @@ impl Config {
                 labels.get("lazymc.group").unwrap().clone()
             ),
             group: labels.get("lazymc.group").unwrap().clone(),
+            resolved_ip,
         };
 
         // Generate the lazymc config file
@@ -224,6 +253,9 @@ impl Config {
         return config;
     }
 
+    /// Create a new configuration from environment variables
+    /// 
+    /// # Deprecated
     #[deprecated(since = "2.1.0", note = "Use `from_container_labels` instead")]
     pub fn from_env() -> Self {
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");
@@ -231,9 +263,12 @@ impl Config {
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "       see: https://github.com/joesturge/lazymc-docker-proxy?tab=readme-ov-file#usage");
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");
 
+        
         let mut labels: HashMap<String, String> = HashMap::new();
         if let Ok(value) = var("LAZYMC_GROUP") {
-            labels.insert("lazymc.group".to_string(), value);
+            labels.insert("lazymc.group".to_string(), value.clone());
+            // Stop the server container if it is running
+            docker::stop(value.clone())
         }
         if let Ok(value) = var("LAZYMC_PORT") {
             labels.insert("lazymc.port".to_string(), value);
