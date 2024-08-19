@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - id: jobs
-        uses: philips-labs/list-folders-action@v2
+        uses: kmanimaran/list-folder-action@v4
         with:
           path: ./tests/bats
 
@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         inputs: ${{fromJson(needs.find-tests.outputs.folders)}}
-        
+
     name: Run Bats Tests
     runs-on: ubuntu-latest
 
