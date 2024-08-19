@@ -40,8 +40,21 @@ services:
     restart: no
     environment:
       EULA: "TRUE"
+      ONLINE_MODE: "FALSE"
     volumes:
       - data:/data
+
+  mc-client-static-network:
+    container_name: mc-client-static-network
+    restart: no
+    environment:
+      SERVER_IP: 172.21.0.2
+      SERVER_PORT: 25565
+      USERNAME: "test-bot"
+    networks:
+      minecraft-network:
+        ipv4_address: 172.21.0.4
+    build: ../../bot/
 
 volumes:
   data:

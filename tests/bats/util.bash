@@ -68,6 +68,13 @@ wait_for_log() {
     done
 }
 
+start_container() {
+    local container=$1
+
+    echo "Starting container: $container" >&3
+    docker compose --project-directory $project start $container
+}
+
 stop_container() {
     local container=$1
 

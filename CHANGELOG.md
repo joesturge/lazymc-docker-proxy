@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- test which uses a minecraft bot to login to the server to ensure it functions correctly
+
+### Changed
+
+- On boot, the app will stop all server containers to ensure state is controlled
+- On shutdown, the app stop all server containers to ensure state is controlled
+
 ### Fixed
 
 - Resolve static ip for container if not using IPAM also
+- Warns when the container IP could not be resolved (only an issue if not using IPAM config)
 
 ## [2.3.0] - 2024-08-18
 

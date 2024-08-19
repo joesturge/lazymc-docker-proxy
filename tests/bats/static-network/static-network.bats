@@ -4,7 +4,10 @@ load ../util.bash
 
 project="./tests/bats/static-network"
 
-@test "Static network - Test lazymc resolves the IP address of the minecraft server if using a static network" {
+@test "Client connection test with static network" {
+    # stop the client container
+    stop_container mc-client-static-network
+    
     # stop the server container
     stop_container mc-static-network
 
@@ -15,26 +18,32 @@ project="./tests/bats/static-network"
     reset_timestamp
 
     #
-    # The above steps ensures that this app can read the ip address of a stopped minecraft server
+    # The above steps ensures that the containers are in a clean state
     #
 
     # wait for lazymc to replace the address in the config
-    wait_for_formatted_log "lazymc-static-network" "DEBUG" "lazymc-docker-proxy::entrypoint::docker" "Resolved address: 172.21.0.3:25565"
+    wait_for_formatted_log "lazymc-static-network" "DEBUG" "lazymc-docker-proxy::docker" "Resolved address: 172.21.0.3:25565"
 
     # wait for the config to generated
     wait_for_log "lazymc-static-network" "address = \"172.21.0.3:25565\""
 
-        # wait for lazymc process to start
-    wait_for_formatted_log "lazymc-static-network" "INFO" "lazymc-docker-proxy::entrypoint" "Starting lazymc process for group: mc..."
+    # wait for lazymc-docker-proxy to to be ready
+    wait_for_formatted_log "lazymc-static-network" "INFO" "lazymc-docker-proxy::entrypoint" "Setup complete. Waiting for exit signal..."
 
-    # wait for lazymc to start the server
-    wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc" "Starting server..."
+    # start the client container
+    start_container mc-client-static-network
+
+    # wait for lazymc to start the server for the client
+    wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc" "Starting server for 'test-bot'..."
 
     # wait for the server to be online
     wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc::monitor" "Server is now online" 300
 
     # wait for the mincraft server to be ready
     wait_for_log "mc-static-network" "RCON running on 0.0.0.0:25575" 300
+
+    # disconnect the client
+    stop_container mc-client-static-network
 
     # wait for the server to be idle
     wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc::monitor" "Server has been idle, sleeping..." 120

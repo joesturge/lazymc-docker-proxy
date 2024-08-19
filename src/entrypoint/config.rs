@@ -254,9 +254,12 @@ impl Config {
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "       see: https://github.com/joesturge/lazymc-docker-proxy?tab=readme-ov-file#usage");
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");
 
+        
         let mut labels: HashMap<String, String> = HashMap::new();
         if let Ok(value) = var("LAZYMC_GROUP") {
-            labels.insert("lazymc.group".to_string(), value);
+            labels.insert("lazymc.group".to_string(), value.clone());
+            // Stop the server container if it is running
+            docker::stop(value.clone())
         }
         if let Ok(value) = var("LAZYMC_PORT") {
             labels.insert("lazymc.port".to_string(), value);
