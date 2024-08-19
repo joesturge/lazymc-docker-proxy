@@ -21,6 +21,7 @@ struct Args {
     group: Option<String>,
 }
 
+/// Main entrypoint for the application
 fn main() {
     logging::init();
 

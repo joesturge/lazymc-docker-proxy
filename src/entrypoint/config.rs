@@ -85,7 +85,9 @@ pub struct Config {
     resolved_ip: bool,
 }
 
+/// Configuration for the lazymc server
 impl Config {
+    /// Generate the start command for the lazymc server
     pub fn start_command(&self) -> Command {
         // Start the docker container if the IP address has not been resolved
         if !self.resolved_ip {
@@ -99,14 +101,17 @@ impl Config {
         return command;
     }
 
+    /// Get the group name for the lazymc server
     pub fn group(&self) -> &str {
         &self.group
     }
 
+    /// Convert the configuration to a TOML string
     fn as_toml_string(&self) -> String {
         toml::to_string(self).unwrap()
     }
 
+    /// Create the lazymc configuration file
     fn create_file(&self) {
         let toml = self.as_toml_string();
         let file_name: &String = &format!("lazymc.{}.toml", self.group.clone());
@@ -116,6 +121,7 @@ impl Config {
         debug!(target: "lazymc-docker-proxy::entrypoint::config", "`generated`: {}\n\n{}", path.display(), toml);
     }
 
+    /// Create a new configuration from container labels
     pub fn from_container_labels(labels: HashMap<String, String>) -> Self {
         // Check for required labels
         labels.get("lazymc.server.address").unwrap_or_else(|| {
@@ -247,6 +253,9 @@ impl Config {
         return config;
     }
 
+    /// Create a new configuration from environment variables
+    /// 
+    /// # Deprecated
     #[deprecated(since = "2.1.0", note = "Use `from_container_labels` instead")]
     pub fn from_env() -> Self {
         warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");

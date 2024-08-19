@@ -2,6 +2,7 @@ use std::{process, thread, time::Duration};
 
 use crate::docker;
 
+/// Run the command to start a group
 pub fn run(group: String) {
     info!(target: "lazymc-docker-proxy::command", "Received command to start group: {}", group);
     // Set a handler for SIGTERM

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- recover from state where lazymc is unable to stop the server as the server started without lazymc starting it
+- test which ensures it can recover from an unexpected state
 - test which uses a minecraft bot to login to the server to ensure it functions correctly
 
 ### Changed

@@ -8,14 +8,12 @@ networks:
         - subnet: 172.21.0.0/16
 
 services:
-  lazymc-static-network:
-    container_name: lazymc-static-network
+  lazymc-unexpected-server-state-recovery:
+    container_name: lazymc-unexpected-server-state-recovery
     networks:
       minecraft-network:
         ipv4_address: 172.21.0.2
     restart: unless-stopped
-    environment:
-      RUST_LOG: "debug"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - data:/server:ro
@@ -23,16 +21,16 @@ services:
       - "25565:25565"
     build: ../../../
 
-  mc-static-network:
+  mc-unexpected-server-state-recovery:
     image: itzg/minecraft-server:java21
-    container_name: mc-static-network
+    container_name: mc-unexpected-server-state-recovery
     networks:
       minecraft-network:
         ipv4_address: 172.21.0.3
     labels:
       - lazymc.enabled=true
       - lazymc.group=mc
-      - lazymc.server.address=mc-static-network:25565
+      - lazymc.server.address=mc-unexpected-server-state-recovery:25565
       - lazymc.time.minimum_online_time=30
       - lazymc.time.sleep_after=5
     tty: true
@@ -44,8 +42,8 @@ services:
     volumes:
       - data:/data
 
-  mc-client-static-network:
-    container_name: mc-client-static-network
+  mc-client-unexpected-server-state-recovery:
+    container_name: mc-client-unexpected-server-state-recovery
     restart: no
     environment:
       SERVER_IP: 172.21.0.2

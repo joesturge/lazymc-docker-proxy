@@ -6,6 +6,7 @@ use std::{io::{BufRead, BufReader}, process::{self, exit}, str::FromStr};
 
 use crate::docker;
 
+/// Entrypoint for the application
 pub fn run() {
     // Ensure all server containers are stopped before starting
     info!(target: "lazymc-docker-proxy::entrypoint", "Ensuring all server containers are stopped...");
@@ -73,6 +74,7 @@ pub fn run() {
     
 }
 
+/// Wrap log messages from child processes
 fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
     if let Ok(line) = line {
         let regex: Regex = Regex::new(r"(?P<level>[A-Z]+)\s+(?P<target>[a-zA-Z0-9:_-]+)\s+>\s+(?P<message>.+)$").unwrap();
@@ -84,8 +86,23 @@ fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
             let wrapped_target = &format!("{}::{}", group, target);
             let log_message = format!("{}", message);
             log!(target: wrapped_target, Level::from_str(level).unwrap_or(Level::Warn), "{}", log_message);
+            handle_log(group, &log_message);
         } else {
             print!("{}", line);
+        }
+    }
+}
+
+/// Handle log messages that require special attention
+fn handle_log(group: &String, message: &String) {
+    match message.as_str() {
+        "Failed to stop server, no more suitable stopping method to use" => {
+            warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group.clone());
+            docker::stop(group.clone());
+            info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group.clone());
+        }
+        _ => {
+            return;
         }
     }
 }
