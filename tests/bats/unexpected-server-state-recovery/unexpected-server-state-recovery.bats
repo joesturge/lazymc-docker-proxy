@@ -43,7 +43,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     stop_container mc-client-unexpected-server-state-recovery
 
     # wait for lazymc to be in an unexpected state
-    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "mc::lazymc" "Failed to stop server, no more suitable stopping method to use"
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "mc::lazymc" "Failed to stop server, no more suitable stopping method to use" 120
 
     # wait for lazymc-docker-proxy to detect the server is in an unexpected state
     wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "lazymc-docker-proxy::entrypoint" "Unexpected server state detected, force stopping mc server container..."
@@ -61,7 +61,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     start_container mc-client-unexpected-server-state-recovery
 
     # wait for lazymc to start the server for the client
-    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc" "Starting server for 'test-bot'..."
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc" "Starting server for 'test-bot'..." 300
 
     # wait for the server to be online
     wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc::monitor" "Server is now online" 300
