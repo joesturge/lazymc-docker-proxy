@@ -2,9 +2,10 @@
 extern crate log;
 
 mod command;
-mod entrypoint;
-mod logging;
 mod docker;
+mod entrypoint;
+mod health;
+mod logging;
 
 use clap::Parser;
 
@@ -19,6 +20,10 @@ struct Args {
     /// The lazymc group name
     #[arg(short, long, requires_if("command", "true"))]
     group: Option<String>,
+
+    /// Execute with this flag when running as a health check
+    #[arg(short, long)]
+    health: bool,
 }
 
 /// Main entrypoint for the application
@@ -28,7 +33,9 @@ fn main() {
     let args: Args = Args::parse();
 
     if args.command {
-        command::run(args.group.clone().unwrap());
+        command::run(args.group.unwrap());
+    } else if args.health {
+        health::run();
     } else {
         entrypoint::run();
     }

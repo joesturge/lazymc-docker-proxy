@@ -8,7 +8,7 @@ use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
 
-use crate::docker;
+use crate::{docker, health};
 
 const DEFAULT_PORT: i32 = 25565;
 
@@ -126,10 +126,12 @@ impl Config {
         // Check for required labels
         labels.get("lazymc.server.address").unwrap_or_else(|| {
             error!(target: "lazymc-docker-proxy::entrypoint::config", "lazymc.server.address is not set");
+            health::unhealthy();
             exit(1);
         });
         labels.get("lazymc.group").unwrap_or_else(|| {
             error!(target: "lazymc-docker-proxy::entrypoint::config", "lazymc.group is not set");
+            health::unhealthy();
             exit(1);
         });
 
@@ -216,12 +218,14 @@ impl Config {
                 true => var("LAZYMC_LEGACY_VERSION")
                     .unwrap_or_else(|err| {
                         error!(target: "lazymc-docker-proxy::entrypoint::config", "LAZYMC_LEGACY_VERSION is not set: {}", err);
+                        health::unhealthy();
                         exit(1);
                     })
                     .into(),
                 false => var("LAZYMC_VERSION")
                     .unwrap_or_else(|err| {
                         error!(target: "lazymc-docker-proxy::entrypoint::config", "LAZYMC_VERSION is not set: {}", err);
+                        health::unhealthy();
                         exit(1);
                     })
                     .into(),

@@ -22,7 +22,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     #
 
     # wait for lazymc-docker-proxy to to be ready
-    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "lazymc-docker-proxy::entrypoint" "Setup complete. Waiting for exit signal..."
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "lazymc-docker-proxy::health" "Application is healthy."
 
     # wait for lazymc to be ready
     wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc" "Proxying public 0.0.0.0:25565 to server 172.21.0.3:25565"

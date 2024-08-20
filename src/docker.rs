@@ -7,13 +7,23 @@ use futures::{future, FutureExt};
 use log::error;
 use tokio::runtime::Runtime;
 
+use crate::health;
+
+/// Connect to the docker daemon
+pub fn connect() -> Docker {
+    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
+        error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
+        health::unhealthy();
+        exit(1)
+    });
+
+    return docker;
+}
+
 /// Stop container with the label "lazymc.group=group"
 pub fn stop(group: String) {
     debug!(target: "lazymc-docker-proxy::docker", "Stopping containers...");
-    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
-        error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
-        exit(1)
-    });
+    let docker: Docker = connect();
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
@@ -55,7 +65,7 @@ pub fn stop(group: String) {
 /// Start container with the label "lazymc.group=group"
 pub fn start(group: String) {
     debug!(target: "lazymc-docker-proxy::docker", "Starting containers...");
-    let docker: Docker = Docker::connect_with_local_defaults().expect("Error connecting to docker");
+    let docker: Docker = connect();
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
@@ -96,10 +106,7 @@ pub fn start(group: String) {
 
 /// Stop all containers with the label "lazymc.enabled=true"
 pub fn stop_all_containers() {
-    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
-        error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
-        exit(1)
-    });
+    let docker: Docker = connect();
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
@@ -138,10 +145,7 @@ pub fn stop_all_containers() {
 
 /// Get all labels for containers with the label "lazymc.enabled=true"
 pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::String>> {
-    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
-        error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
-        exit(1)
-    });
+    let docker: Docker = connect();
 
     let mut list_container_filters: HashMap<String, Vec<String>> =
         HashMap::<String, Vec<String>>::new();
