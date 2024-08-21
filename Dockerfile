@@ -37,6 +37,10 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 RUN cargo build --target x86_64-unknown-linux-musl --release --locked
 
+# health init
+FROM busybox:1.36.1-uclibc as health-init
+RUN mkdir -p /app && echo "STARTING" > /app/health
+
 # final image
 FROM scratch
 
@@ -55,8 +59,14 @@ COPY --from=lazymc-legacy-builder /usr/src/lazymc/target/x86_64-unknown-linux-mu
 # Copy the compiled binary from the lazymc-docker-proxy stage
 COPY --from=app-builder /usr/src/lazymc-docker-proxy/target/x86_64-unknown-linux-musl/release/lazymc-docker-proxy /usr/local/bin/lazymc-docker-proxy
 
+# Copy the health init state
+COPY --from=health-init /app/health /app/health
+
 # Set the working directory
 WORKDIR /app
+
+# Set the healthcheck
+HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD ["lazymc-docker-proxy", "--health"]
 
 # Run lazymc by default
 ENTRYPOINT ["lazymc-docker-proxy"]
