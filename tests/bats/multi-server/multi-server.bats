@@ -5,6 +5,16 @@ load ../util.bash
 project="./tests/bats/multi-server"
 
 @test "Multiple Servers - Test primary and secondary servers stop when idle" {
+    # restart the lazymc container
+    restart_container lazymc-multi-server
+
+    # reset the start timestamp
+    reset_timestamp
+
+    #
+    # The above steps ensures that the containers are in a clean state
+    #
+
     # wait for primary lazymc process to start
     wait_for_formatted_log "lazymc-multi-server" "INFO" "lazymc-docker-proxy::entrypoint" "Starting lazymc process for group: primary..."
 

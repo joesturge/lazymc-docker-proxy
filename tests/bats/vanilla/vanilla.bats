@@ -5,6 +5,16 @@ load ../util.bash
 project="./tests/bats/vanilla"
 
 @test "Vanilla - Test lazymc stops server when idle" {
+    # restart the lazymc container
+    restart_container lazymc-multi-server
+
+    # reset the start timestamp
+    reset_timestamp
+
+    #
+    # The above steps ensures that the containers are in a clean state
+    #
+
     # wait for lazymc process to start
     wait_for_formatted_log "lazymc-vanilla" "INFO" "lazymc-docker-proxy::entrypoint" "Starting lazymc process for group: mc..."
 
