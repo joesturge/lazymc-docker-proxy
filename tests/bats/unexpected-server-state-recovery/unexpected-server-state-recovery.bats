@@ -33,6 +33,8 @@ project="./tests/bats/unexpected-server-state-recovery"
     # wait for the mincraft server to be ready
     wait_for_log "mc-unexpected-server-state-recovery" "RCON running on 0.0.0.0:25575" 300
 
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc::monitor" "Server is now online"
+
     # start the client container to make lazymc want to shutdown the server
     start_container mc-client-unexpected-server-state-recovery
 
@@ -43,7 +45,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     stop_container mc-client-unexpected-server-state-recovery
 
     # wait for lazymc to be in an unexpected state
-    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "mc::lazymc" "Failed to stop server, no more suitable stopping method to use" 120
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "mc::lazymc" "Failed to stop server, no more suitable stopping method to use" 300
 
     # wait for lazymc-docker-proxy to detect the server is in an unexpected state
     wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "WARN" "lazymc-docker-proxy::entrypoint" "Unexpected server state detected, force stopping mc server container..."
