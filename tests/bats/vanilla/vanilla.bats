@@ -6,7 +6,7 @@ project="./tests/bats/vanilla"
 
 @test "Vanilla - Test lazymc stops server when idle" {
     # restart the lazymc container
-    restart_container lazymc-multi-server
+    restart_container lazymc-vanilla
 
     # reset the start timestamp
     reset_timestamp
