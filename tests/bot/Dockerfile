@@ -1,5 +1,5 @@
 # build this app
-FROM rust:1.80 as app-builder
+FROM rust:1.81 as app-builder
 RUN rustup install nightly
 RUN rustup default nightly
 RUN rustup target add x86_64-unknown-linux-musl
