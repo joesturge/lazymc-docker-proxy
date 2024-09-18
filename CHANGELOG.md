@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Error handling no longer pauses logging thread, just sets unhealthy
+
+### Security 
+
+- Dependabot updates
+
 ## [2.5.1] - 2024-09-03
 
 ### Security 
