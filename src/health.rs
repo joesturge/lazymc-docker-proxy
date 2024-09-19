@@ -51,11 +51,7 @@ pub fn healthy() {
 
 pub fn unhealthy() {
     set(Status::UNHEALTHY);
-    error!(target: "lazymc-docker-proxy::health", "Error detected. Pausing application...");
-    // wait indefinitely
-    loop {
-        std::thread::park();
-    }
+    error!(target: "lazymc-docker-proxy::health", "Application is unhealthy.");
 }
 
 pub fn run() {
