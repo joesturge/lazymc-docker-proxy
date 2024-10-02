@@ -38,7 +38,7 @@ COPY src ./src
 RUN cargo build --target x86_64-unknown-linux-musl --release --locked
 
 # health init
-FROM busybox:1.36.1-uclibc as health-init
+FROM busybox:1.37.0-uclibc as health-init
 RUN mkdir -p /app && echo "STARTING" > /app/health
 
 # final image
