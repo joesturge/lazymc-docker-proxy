@@ -32,6 +32,8 @@ struct ServerSection {
     freeze_process: Option<bool>,
     probe_on_start: Option<bool>,
     send_proxy_v2: Option<bool>,
+    start_timeout: Option<i32>,
+    stop_timeout: Option<i32>,
     wake_on_crash: Option<bool>,
     wake_on_start: Option<bool>,
     wake_whitelist: Option<bool>,
@@ -51,10 +53,50 @@ struct TimeSection {
 }
 
 #[derive(Serialize, Deserialize)]
+struct JoinSection {
+    methods: Option<Vec<String>>,
+    kick: JoinKickSection,
+    hold: JoinHoldSection,
+    forward: JoinForwardSection,
+    lobby: JoinLobbySection,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct JoinKickSection {
+    starting: Option<String>,
+    stopping: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct JoinHoldSection {
+    timeout: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct JoinForwardSection{
+    address: Option<String>,
+    send_proxy_v2: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+struct JoinLobbySection {
+    timeout: Option<i32>,
+    message: Option<String>,
+    ready_sound: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
 struct MotdSection {
     sleeping: Option<String>,
     starting: Option<String>,
     stopping: Option<String>,
+    from_server: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct LockoutSection {
+    enabled: Option<bool>,
+    message: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -71,6 +113,8 @@ struct ConfigSection {
 pub struct Config {
     advanced: AdvancedSection,
     config: ConfigSection,
+    join: JoinSection,
+    lockout: LockoutSection,
     motd: MotdSection,
     public: PublicSection,
     server: ServerSection,
@@ -175,6 +219,12 @@ impl Config {
                 .get("lazymc.server.probe_on_start")
                 .map(|x| x == "true"),
             forge: labels.get("lazymc.server.forge").map(|x| x == "true"),
+            start_timeout: labels
+                .get("lazymc.server.start_timeout")
+                .and_then(|x| x.parse().ok()),
+            stop_timeout: labels
+                .get("lazymc.server.stop_timeout")
+                .and_then(|x| x.parse().ok()),
             send_proxy_v2: labels
                 .get("lazymc.server.send_proxy_v2")
                 .map(|x| x == "true"),
@@ -187,6 +237,60 @@ impl Config {
             minimum_online_time: labels
                 .get("lazymc.time.minimum_online_time")
                 .and_then(|x| x.parse().ok()),
+        };
+
+        let join_kick_section: JoinKickSection = JoinKickSection {
+            starting: labels
+                .get("lazymc.join.kick.starting").cloned(),
+            stopping: labels
+                .get("lazymc.join.kick.stopping").cloned(),
+        };
+
+        let join_hold_section: JoinHoldSection = JoinHoldSection {
+            timeout: labels
+                .get("lazymc.join.hold.timeout")
+                .and_then(|x| x.parse().ok()),
+        };
+
+        let join_forward_section: JoinForwardSection = JoinForwardSection {
+            address: labels
+                .get("lazymc.join.forward.address")
+                .and_then(|address| address.to_socket_addrs().ok())
+                .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
+                .and_then(|addr| addr.to_string().parse().ok())
+                .or_else(|| {
+                    warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.join.forward.address. Falling back to the value provided.");
+                    resolved_ip = false;
+                    labels.get("lazymc.join.forward.address").cloned()
+                }),
+            send_proxy_v2: labels
+                .get("lazymc.join.forward.send_proxy_v2")
+                .map(|x| x == "true"),
+        };
+
+        let join_lobby_section: JoinLobbySection = JoinLobbySection {
+            timeout: labels
+                .get("lazymc.join.lobby.timeout")
+                .and_then(|x| x.parse().ok()),
+            message: labels
+                .get("lazymc.join.lobby.message").cloned(),
+            ready_sound: labels
+                .get("lazymc.join.lobby.sound").cloned(),
+        };
+
+        let join_section: JoinSection = JoinSection {
+            methods: labels
+                .get("lazymc.join.methods")
+                .and_then(|x| {
+                    Some(x.split(",")
+                        .map(|s| s.to_string())
+                        .collect())
+                    .filter(|m: &Vec<String>| !m.is_empty())
+                }),
+            kick: join_kick_section.clone(),
+            hold: join_hold_section.clone(),
+            forward: join_forward_section.clone(),
+            lobby: join_lobby_section.clone(),
         };
 
         let public_section: PublicSection = PublicSection {
@@ -207,6 +311,16 @@ impl Config {
             sleeping: labels.get("lazymc.motd.sleeping").cloned(),
             starting: labels.get("lazymc.motd.starting").cloned(),
             stopping: labels.get("lazymc.motd.stopping").cloned(),
+            from_server: labels
+                .get("lazymc.motd.from_server")
+                .map(|x| x == "true"),
+        };
+
+        let lockout_section: LockoutSection = LockoutSection {
+            enabled: labels
+                .get("lazymc.lockout.enabled")
+                .map(|x| x == "true"),
+            message: labels.get("lazymc.lockout.message").cloned(),
         };
 
         let advanced_section: AdvancedSection = AdvancedSection {
@@ -236,7 +350,9 @@ impl Config {
             server: server_section,
             public: public_section,
             time: time_section,
+            join: join_section,
             motd: motd_section,
+            lockout: lockout_section,
             advanced: advanced_section,
             config: config_section,
             start_command: match is_legacy(labels.get("lazymc.public.version").cloned()) {
