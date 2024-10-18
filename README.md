@@ -8,15 +8,15 @@ This project is also somewhat inspired by [lazytainer](https://github.com/vmorga
 
 ![example](images/example.png)
 
-# Usage
+## Usage
 
-## Vanilla minimal Example
+### Vanilla minimal Example
 
 Here is a minimal Docker Compose example using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) as the server:
 
-> ⚠️ It is **very important** that you assign **static** IP Address to each container. 
+> ⚠️ It is **very important** that you assign **static** IP Address to each container.
 This is due to quirk in how lazymc monitors the servers, it does not expect the IP address of a server to change,
-this can happen when a container stops and starts again There is an open issue for this: https://github.com/joesturge/lazymc-docker-proxy/issues/63.
+this can happen when a container stops and starts again There is an [opened issue](https://github.com/joesturge/lazymc-docker-proxy/issues/63) for this.
 As this is an issue with lazymc itself it is unlikely that a fix can be found. Im open to suggestions on this.
 
 ```yaml
@@ -88,7 +88,7 @@ volumes:
   data:
 ```
 
-## Multiple server support
+### Multiple server support
 
 This container can also proxy to and control multiple containers at once. You could use it with `itzg/mc-router` if you choose to:
 
@@ -206,7 +206,7 @@ volumes:
   data-secondary:
 ```
 
-## Forge 1.19.2
+### Forge 1.19.2
 
 ```yaml
 networks:
@@ -259,7 +259,7 @@ volumes:
   data:
 ```
 
-## Configuration using labels
+### Configuration using labels
 
 The suggested way to manage the lazymc settings on your minecraft containers is to use container labels.
 
@@ -272,36 +272,49 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **\*lazymc.server.address** - The address of the Docker Minecraft server to manage, should use the internal Docker network address of the server container, such as `mc:25565` or the assigned static IP such as `172.18.0.3:25565`.
 - **\*lazymc.group** - This is used by `lazymc-docker-proxy` to locate the container to start and stop
 - **lazymc.port** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
+- **lazymc.join.methods** - Methods to use to occupy a client on join while the server is starting (separated by commas).
+- **lazymc.join.kick.starting** - Message shown when client is kicked while server is starting.
+- **lazymc.join.kick.stopping** - Message shown when client is kicked while server is stopping.
+- **lazymc.join.hold.timeout** - Hold client for number of seconds on connect while server starts. Keep below Minecraft timeout of 30 seconds.
+- **lazymc.join.forward.address** - IP and port to forward to.
+- **lazymc.join.forward.send_proxy_v2** - Add HAProxy v2 header to forwarded connections.
+- **lazymc.join.lobby.timeout** - Maximum time in seconds in the lobby while the server starts.
+- **lazymc.join.lobby.message** - Message banner in lobby shown to client.
+- **lazymc.join.lobby.ready_sound** - Sound effect to play when server is ready.
+- **lazymc.lockout.enabled** - Enable to prevent everybody from connecting through lazymc. Instantly kicks player.
+- **lazymc.lockout.message** - Kick players with following message.
 - **lazymc.motd.sleeping** - MOTD, shown in the server browser when sleeping.
 - **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
-- **lazymc.public.protocol** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **lazymc.public.version** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **lazymc.server.block_banned_ips** - To wake the server, the user must be in the server whitelist if enabled on the server.
+- **lazymc.motd.from_server** - Use MOTD from Minecraft server once known.
+- **lazymc.public.protocol** - The minecraft client version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
+- **lazymc.public.version** - The minecraft protocol version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
 - **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
-- **lazymc.server.drop_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
-- **lazymc.server.forge** - Drop connections from banned IPs.
 - **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
-- **lazymc.server.send_proxy_v2** - Set to true if this server runs Forge.
-- **lazymc.server.wake_whitelist** - Add HAProxy v2 header to proxied connections.
+- **lazymc.server.forge** - Set to true if this server runs Forge.
+- **lazymc.server.start_timeout** - Server start timeout in seconds. Force kill server process if it takes too long.
+- **lazymc.server.stop_timeout** - Server stop timeout in seconds. Force kill server process if it takes too long.
+- **lazymc.server.wake_whitelist** - To wake the server, the user must be in the server whitelist if enabled on the server.
+- **lazymc.server.block_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
+- **lazymc.server.drop_banned_ips** - Drop connections from banned IPs.
+- **lazymc.server.send_proxy_v2** - Add HAProxy v2 header to proxied connections.
 - **lazymc.time.minimum_online_time** - Sleep after a number of seconds.
 - **lazymc.time.sleep_after** - Minimum time in seconds to stay online when the server is started.
 
-> Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.
-
+> Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.  
 > Note: `rcon` configurations are not supported as this app relies on the SIGTERM signal to stop the server.
 
 If you want more details or have issues, you can also refer to the lazymc [documentation](https://github.com/timvisee/lazymc/tree/master).
 
 Also, refer to the lazymc [config example](https://github.com/timvisee/lazymc/blob/master/res/lazymc.toml). You may notice that the environment variables are named in the same way. This is intentional...
 
-## Environment Variables
+### Environment Variables
 
 You can enable debug logging using the `RUST_LOG` env var.
 
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
 
-### Deprecated
+#### Deprecated
 
 > ⚠️ Using environment variables to configure the server is deprecated and will be removed in the next release, please use container labels on the minecraft server instead. These are still available for the time being.
 
@@ -313,8 +326,8 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
 - **MOTD_STARTING** - MOTD, shown in the server browser when starting.
 - **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
-- **PUBLIC_VERSION** - The minecraft client version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
-- **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See this page for information: https://minecraft.fandom.com/wiki/Protocol_version
+- **PUBLIC_VERSION** - The minecraft client version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
+- **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
 - **SERVER_BLOCK_BANNED_IPS** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **SERVER_DIRECTORY** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
@@ -326,11 +339,11 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **TIME_MINIMUM_ONLINE_TIME** - Minimum time in seconds to stay online when the server is started.
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
 
-# Development
+## Development
 
 Thanks for wanting to contribute! Please read the [contributing guidelines](CONTRIBUTING.md) first off.
 
-## Compile locally
+### Compile locally
 
 To develop changes fork this repo and ensure you have the following installed:
 
@@ -346,7 +359,7 @@ cargo build --release
 
 to build the executable under `target/release` directory.
 
-## Docker
+### Docker
 
 To build the dockerfile locally you can run (from the project root)
 
@@ -356,7 +369,7 @@ docker build .
 
 It is good to also check this before committing to make sure you did not break the build
 
-## Testing
+### Testing
 
 There are bats integration test for this application. Which each perform the following:
 
@@ -367,11 +380,11 @@ There are bats integration test for this application. Which each perform the fol
 
 These checks are performed in using github actions on every commit
 
-## Changelog
+### Changelog
 
 This project uses [keepachangelog](https://keepachangelog.com/en/1.1.0/) to maintain it's changelog.
 If you are proposing a change please update the [changelog](CHANGELOG.md) by adding your changes under the `[Unreleased]` header
 
-# Thanks
+## Thanks
 
 Thanks for taking the time to check this project out, I hope it helps you manage your minecraft servers for years to come!
