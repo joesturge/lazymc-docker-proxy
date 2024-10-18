@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Add support for missing lazymc options
+- Update README.md
+
 ## [2.5.2] - 2024-09-19
 
 ### Changed
