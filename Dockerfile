@@ -3,7 +3,7 @@ ARG LAZYMC_VERSION=0.2.11
 ARG LAZYMC_LEGACY_VERSION=0.2.10
 
 # build lazymc
-FROM rust:1.81 as lazymc-builder
+FROM rust:1.82 as lazymc-builder
 RUN rustup target add x86_64-unknown-linux-musl
 RUN apt update && apt install -y musl-tools musl-dev
 RUN update-ca-certificates
@@ -15,7 +15,7 @@ RUN git clone --branch v$LAZYMC_VERSION https://github.com/timvisee/lazymc .
 RUN cargo build --target x86_64-unknown-linux-musl --release --locked
 
 # build lazymc-legacy
-FROM rust:1.81 as lazymc-legacy-builder
+FROM rust:1.82 as lazymc-legacy-builder
 RUN rustup target add x86_64-unknown-linux-musl
 RUN apt update && apt install -y musl-tools musl-dev
 RUN update-ca-certificates
@@ -27,7 +27,7 @@ RUN git clone --branch v$LAZYMC_LEGACY_VERSION https://github.com/timvisee/lazym
 RUN cargo build --target x86_64-unknown-linux-musl --release --locked
 
 # build this app
-FROM rust:1.81 as app-builder
+FROM rust:1.82 as app-builder
 RUN rustup target add x86_64-unknown-linux-musl
 RUN apt update && apt install -y musl-tools musl-dev
 RUN update-ca-certificates
