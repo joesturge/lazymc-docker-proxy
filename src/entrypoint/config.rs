@@ -390,6 +390,39 @@ impl Config {
             // Stop the server container if it is running
             docker::stop(value.clone())
         }
+        if let Ok(value) = var("LAZYMC_JOIN_METHODS") {
+            labels.insert("lazymc.join.methods".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_KICK_STARTING") {
+            labels.insert("lazymc.join.kick.starting".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_KICK_STOPPING") {
+            labels.insert("lazymc.join.kick.stopping".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_HOLD_TIMEOUT") {
+            labels.insert("lazymc.join.hold.timeout".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_FORWARD_ADDRESS") {
+            labels.insert("lazymc.join.forward.address".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_FORWARD_SEND_PROXY_V2") {
+            labels.insert("lazymc.join.forward.send_proxy_v2".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_TIMEOUT") {
+            labels.insert("lazymc.join.lobby.timeout".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_MESSAGE") {
+            labels.insert("lazymc.join.lobby.message".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_READY_SOUND") {
+            labels.insert("lazymc.join.lobby.ready_sound".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_LOCKOUT_ENABLED") {
+            labels.insert("lazymc.lockout.enabled".to_string(), value);
+        }
+        if let Ok(value) = var("LAZYMC_LOCKOUT_MESSAGE") {
+            labels.insert("lazymc.lockout.message".to_string(), value);
+        }
         if let Ok(value) = var("LAZYMC_PORT") {
             labels.insert("lazymc.port".to_string(), value);
         }
@@ -401,6 +434,9 @@ impl Config {
         }
         if let Ok(value) = var("MOTD_STOPPING") {
             labels.insert("lazymc.motd.stopping".to_string(), value);
+        }
+        if let Ok(value) = var("MOTD_FROM_SERVER") {
+            labels.insert("lazymc.motd.from_server".to_string(), value);
         }
         if let Ok(value) = var("PUBLIC_PROTOCOL") {
             labels.insert("lazymc.public.protocol".to_string(), value);
@@ -428,6 +464,12 @@ impl Config {
         }
         if let Ok(value) = var("SERVER_SEND_PROXY_V2") {
             labels.insert("lazymc.server.send_proxy_v2".to_string(), value);
+        }
+        if let Ok(value) = var("SERVER_START_TIMEOUT") {
+            labels.insert("lazymc.server.start_timeout".to_string(), value);
+        }
+        if let Ok(value) = var("SERVER_STOP_TIMEOUT") {
+            labels.insert("lazymc.server.stop_timeout".to_string(), value);
         }
         if let Ok(value) = var("SERVER_WAKE_WHITELIST") {
             labels.insert("lazymc.server.wake_whitelist".to_string(), value);

@@ -323,9 +323,21 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **\*SERVER_ADDRESS** - The address of the Docker Minecraft server to manage, should use the internal Docker network address of the server container, such as `mc:25565` or the assigned static IP such as `172.18.0.3:25565`.
 - **\*LAZYMC_GROUP** - The value of the `lazymc.group` label assigned to the Docker Minecraft server. This is used by the image to start or stop the server when lazymc triggers it.
 - **LAZYMC_PORT** - The port on the `lazymc-docker-proxy` container this server will be accessible from. Defaults to `25565`.
+- **LAZYMC_JOIN_METHODS** - Methods to use to occupy a client on join while the server is starting (separated by commas).
+- **LAZYMC_JOIN_KICK_STARTING** - Message shown when client is kicked while server is starting.
+- **LAZYMC_JOIN_KICK_STOPPING** - Message shown when client is kicked while server is stopping.
+- **LAZYMC_JOIN_HOLD_TIMEOUT** - Hold client for number of seconds on connect while server starts. Keep below Minecraft timeout of 30 seconds.
+- **LAZYMC_JOIN_FORWARD_ADDRESS** - IP and port to forward to.
+- **LAZYMC_JOIN_FORWARD_SEND_PROXY_V2** - Add HAProxy v2 header to forwarded connections.
+- **LAZYMC_JOIN_LOBBY_TIMEOUT** - Maximum time in seconds in the lobby while the server starts.
+- **LAZYMC_JOIN_LOBBY_MESSAGE** - Message banner in lobby shown to client.
+- **LAZYMC_JOIN_LOBBY_READY_SOUND** - Sound effect to play when server is ready.
+- **LAZYMC_LOCKOUT_ENABLED** - Enable to prevent everybody from connecting through lazymc. Instantly kicks player.
+- **LAZYMC_LOCKOUT_MESSAGE** - Kick players with following message.
 - **MOTD_SLEEPING** - MOTD, shown in the server browser when sleeping.
 - **MOTD_STARTING** - MOTD, shown in the server browser when starting.
 - **MOTD_STOPPING** - MOTD, shown in the server browser when stopping.
+- **MOTD_FROM_SERVER** - Use MOTD from Minecraft server once known.
 - **PUBLIC_VERSION** - The minecraft client version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
 - **PUBLIC_PROTOCOL** - The minecraft protocol version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
 - **SERVER_WAKE_WHITELIST** - To wake the server, the user must be in the server whitelist if enabled on the server.
@@ -334,6 +346,8 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **SERVER_DROP_BANNED_IPS** - Drop connections from banned IPs.
 - **SERVER_PROBE_ON_START** - Probe required server details when starting lazymc, wakes server on start.
 - **SERVER_FORGE** - Set to true if this server runs Forge.
+- **SERVER_START_TIMEOUT** - Server start timeout in seconds. Force kill server process if it takes too long.
+- **SERVER_STOP_TIMEOUT** - Server stop timeout in seconds. Force kill server process if it takes too long.
 - **SERVER_SEND_PROXY_V2** - Add HAProxy v2 header to proxied connections.
 - **TIME_SLEEP_AFTER** - Sleep after a number of seconds.
 - **TIME_MINIMUM_ONLINE_TIME** - Minimum time in seconds to stay online when the server is started.
