@@ -254,15 +254,7 @@ impl Config {
 
         let join_forward_section: JoinForwardSection = JoinForwardSection {
             address: labels
-                .get("lazymc.join.forward.address")
-                .and_then(|address| address.to_socket_addrs().ok())
-                .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
-                .and_then(|addr| addr.to_string().parse().ok())
-                .or_else(|| {
-                    warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.join.forward.address. Falling back to the value provided.");
-                    resolved_ip = false;
-                    labels.get("lazymc.join.forward.address").cloned()
-                }),
+                .get("lazymc.join.forward.address").cloned(),
             send_proxy_v2: labels
                 .get("lazymc.join.forward.send_proxy_v2")
                 .map(|x| x == "true"),
@@ -286,7 +278,7 @@ impl Config {
                         .map(|s| s.to_string())
                         .collect())
                     .filter(|m: &Vec<String>| !m.is_empty())
-                }),
+                }).or_else(|| None),
             kick: join_kick_section.clone(),
             hold: join_hold_section.clone(),
             forward: join_forward_section.clone(),
