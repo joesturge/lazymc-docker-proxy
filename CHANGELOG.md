@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed bug where servers started when they shouldn't
+
 ## [2.6.0] - 2024-10-30
 
 ### Changed
