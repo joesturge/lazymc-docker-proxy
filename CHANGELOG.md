@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Build
+
+- Added multi arch support, now supports ARM and AMD builds
+
 ## [2.6.1] - 2024-10-30
 
 ### Fixed
