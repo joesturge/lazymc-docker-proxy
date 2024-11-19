@@ -287,8 +287,8 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
 - **lazymc.motd.from_server** - Use MOTD from Minecraft server once known.
-- **lazymc.public.protocol** - The minecraft client version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
-- **lazymc.public.version** - The minecraft protocol version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
+- **lazymc.public.protocol** - The minecraft client version to use. See [this page](https://minecraft.wiki/w/Protocol_version) for information.
+- **lazymc.public.version** - The minecraft protocol version to use. See [this page](https://minecraft.wiki/w/Protocol_version) for information.
 - **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
 - **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
 - **lazymc.server.forge** - Set to true if this server runs Forge.
