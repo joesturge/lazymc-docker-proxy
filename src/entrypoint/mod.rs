@@ -99,9 +99,6 @@ fn handle_log(group: &String, level: &Level, message: &String) {
             docker::stop(group.clone());
             info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group.clone());
         }
-        (Level::Error, _) => {
-            health::unhealthy();
-        }
         _ => {}
     }
 }

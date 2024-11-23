@@ -1,7 +1,7 @@
 # build this app
 FROM rust:1.82 as app-builder
-RUN rustup install nightly
-RUN rustup default nightly
+RUN rustup install nightly-2024-10-01
+RUN rustup default nightly-2024-10-01
 RUN rustup target add x86_64-unknown-linux-musl
 RUN apt update && apt install -y musl-tools musl-dev
 RUN update-ca-certificates
