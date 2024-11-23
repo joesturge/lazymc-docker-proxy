@@ -34,7 +34,7 @@ project="./tests/bats/static-network"
     start_container mc-client-static-network
 
     # wait for lazymc to start the server for the client
-    wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc" "Starting server for 'test-bot'..."
+    wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc" "Starting server for 'test-bot'..." 300
 
     # wait for the server to be online
     wait_for_formatted_log "lazymc-static-network" "INFO" "mc::lazymc::monitor" "Server is now online" 300

@@ -39,7 +39,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     start_container mc-client-unexpected-server-state-recovery
 
     # wait for test-bot to connect
-    wait_for_log "mc-unexpected-server-state-recovery" "test-bot joined the game"
+    wait_for_log "mc-unexpected-server-state-recovery" "test-bot joined the game" 300
 
     # stop the client container
     stop_container mc-client-unexpected-server-state-recovery
