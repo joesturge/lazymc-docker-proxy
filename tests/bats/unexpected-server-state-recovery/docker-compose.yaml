@@ -39,6 +39,7 @@ services:
     environment:
       EULA: "TRUE"
       ONLINE_MODE: "FALSE"
+      VERSION: "1.21.1"
     volumes:
       - data:/data
 
