@@ -28,7 +28,7 @@ project="./tests/bats/static-network"
     wait_for_log "lazymc-static-network" "address = \"172.21.0.3:25565\""
 
     # wait for lazymc-docker-proxy to to be ready
-    wait_for_formatted_log "lazymc-static-network" "INFO" "lazymc-docker-proxy::health" "Application is healthy."
+    wait_for_formatted_log "lazymc-static-network" "INFO" "lazymc-docker-proxy::health" "Application is healthy." 300
 
     # start the client container
     start_container mc-client-static-network
