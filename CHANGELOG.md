@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Container going unhealthy when any error occurs in lazymc, it probably should not be doing that
+- Fixed test/bot by limiting rust nightly to 2024-10-01
+
 ## [2.7.0] - 2024-11-08
 
 ### Build

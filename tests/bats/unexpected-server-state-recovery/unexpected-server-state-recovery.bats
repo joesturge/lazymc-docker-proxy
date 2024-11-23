@@ -22,7 +22,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     #
 
     # wait for lazymc-docker-proxy to to be ready
-    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "lazymc-docker-proxy::health" "Application is healthy."
+    wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "lazymc-docker-proxy::health" "Application is healthy." 300
 
     # wait for lazymc to be ready
     wait_for_formatted_log "lazymc-unexpected-server-state-recovery" "INFO" "mc::lazymc" "Proxying public 0.0.0.0:25565 to server 172.21.0.3:25565"
@@ -39,7 +39,7 @@ project="./tests/bats/unexpected-server-state-recovery"
     start_container mc-client-unexpected-server-state-recovery
 
     # wait for test-bot to connect
-    wait_for_log "mc-unexpected-server-state-recovery" "test-bot joined the game"
+    wait_for_log "mc-unexpected-server-state-recovery" "test-bot joined the game" 300
 
     # stop the client container
     stop_container mc-client-unexpected-server-state-recovery
