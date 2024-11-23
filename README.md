@@ -287,8 +287,8 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **lazymc.motd.starting** - MOTD, shown in the server browser when starting.
 - **lazymc.motd.stopping** - MOTD, shown in the server browser when stopping.
 - **lazymc.motd.from_server** - Use MOTD from Minecraft server once known.
-- **lazymc.public.protocol** - The minecraft client version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
-- **lazymc.public.version** - The minecraft protocol version to use. See [this page](https://minecraft.fandom.com/wiki/Protocol_version) for information.
+- **lazymc.public.protocol** - The minecraft client version to use. See [this page](https://minecraft.wiki/w/Protocol_version) for information.
+- **lazymc.public.version** - The minecraft protocol version to use. See [this page](https://minecraft.wiki/w/Protocol_version) for information.
 - **lazymc.server.directory** - The location of the volume mount within `lazymc-docker-proxy` which contains data for this minecraft server. Defaults to `/server`.
 - **lazymc.server.probe_on_start** - Probe required server details when starting lazymc, wakes server on start.
 - **lazymc.server.forge** - Set to true if this server runs Forge.
@@ -298,8 +298,8 @@ which will be picked up by `lazymc-docker-proxy` (\* is required):
 - **lazymc.server.block_banned_ips** - Block banned IPs as listed in banned-ips.json in the server directory.
 - **lazymc.server.drop_banned_ips** - Drop connections from banned IPs.
 - **lazymc.server.send_proxy_v2** - Add HAProxy v2 header to proxied connections.
-- **lazymc.time.minimum_online_time** - Sleep after a number of seconds.
-- **lazymc.time.sleep_after** - Minimum time in seconds to stay online when the server is started.
+- **lazymc.time.sleep_after** - Sleep after a number of seconds.
+- **lazymc.time.minimum_online_time** - Minimum time in seconds to stay online when the server is started.
 
 > Note: `wake_on_crash` and `wake_on_start` are not configurable due to how lazymc starts the server. When running in Docker Compose, all containers are started by default, so `wake_on_start` must also be true when using this image. `wake_on_crash` is also true as it is recommended to launch the Minecraft server with `restart: no`.  
 > Note: `rcon` configurations are not supported as this app relies on the SIGTERM signal to stop the server.
