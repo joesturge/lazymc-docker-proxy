@@ -1,4 +1,3 @@
-pub(crate) mod config;
 use config::Config;
 use log::Level;
 use regex::Regex;
@@ -19,17 +18,12 @@ pub fn run<T: Adapter>() {
 
     T::stop_all_containers();
 
-    let labels_list = T::get_container_labels();
-    let mut configs: Vec<Config> = Vec::new();
+    let configs: Vec<Config> = T::get_container_labels()
+        .iter()
+        .map(Config::from_container_labels)
+        .collect();
+
     let mut children: Vec<process::Child> = Vec::new();
-
-    for label in labels_list {
-        configs.push(Config::from_container_labels(&label));
-    }
-
-    if configs.is_empty() {
-        configs.push(Config::from_env::<T>());
-    }
 
     for config in configs {
         let group = config.group();

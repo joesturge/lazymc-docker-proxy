@@ -241,7 +241,7 @@ impl Adapter for SystemdAdapter {
             debug!(target: "lazymc-docker-proxy::adapter::systemd", "Found {} container(s) for labels", containers.len());
             containers
                 .into_iter()
-                .map(|container| Config::env_to_label(container.environment))
+                .map(|container| Config::environment_to_label(container.environment))
                 .collect()
         })
     }

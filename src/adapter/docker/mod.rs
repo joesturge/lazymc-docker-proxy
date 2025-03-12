@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::net::SocketAddr;
 use std::process::exit;
 
 use bollard::container::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
@@ -171,13 +170,9 @@ impl Adapter for DockerAdapter {
             // parse port from lazymc.server.address label
             let port = labels
                 .get("lazymc.server.address")
-                .and_then(|address| {
-                    address.parse::<SocketAddr>()
-                        .map(|address| address.port())
-                        .map_err(|err| {
-                            error!(target: "lazymc-docker-proxy::adapter::systemd", "Error parsing container address: {}", err);
-                        }).ok()
-                });
+                .and_then(|address| address.rsplit(':').next())
+                .and_then(|port_str| port_str.parse::<u16>().ok());
+
 
             // try to get the container's IP address from the ipam config as optional
             let ip_address: Option<String> = container
