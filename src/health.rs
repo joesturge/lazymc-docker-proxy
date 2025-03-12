@@ -23,9 +23,9 @@ impl From<&str> for Status {
 impl From<Status> for String {
     fn from(status: Status) -> String {
         match status {
-            Status::STARTING => "STARTING".to_string(),
-            Status::HEALTHY => "HEALTHY".to_string(),
-            Status::UNHEALTHY => "UNHEALTHY".to_string(),
+            Status::STARTING => String::from("STARTING"),
+            Status::HEALTHY => String::from("HEALTHY"),
+            Status::UNHEALTHY => String::from("UNHEALTHY"),
         }
     }
 }
@@ -34,7 +34,7 @@ impl From<Status> for String {
 pub fn check() -> Status {
     let status = fs::read_to_string("/app/health").unwrap_or_else(|_| Status::UNHEALTHY.into());
     debug!(target: "lazymc-docker-proxy::health", "Health status: {}", status);
-    return status.trim().into();
+    status.trim().into()
 }
 
 /// Set the status
@@ -45,8 +45,8 @@ fn set(status: Status) {
 }
 
 pub fn healthy() {
-    info!(target: "lazymc-docker-proxy::health", "Application is healthy.");
     set(Status::HEALTHY);
+    info!(target: "lazymc-docker-proxy::health", "Application is healthy.");
 }
 
 pub fn unhealthy() {

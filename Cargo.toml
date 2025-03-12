@@ -1,8 +1,8 @@
 [package]
 name = "lazymc-docker-proxy"
-version = "0.1.0"
-edition = "2021"
-rust-version = "1.74.0"
+version = "3.0.0"
+edition = "2024"
+rust-version = "1.85.0"
 
 [dependencies]
 bollard = "0.18.1"
@@ -18,3 +18,4 @@ tokio = { version = "1.44.0", default-features = false, features = [
 ] }
 toml = "0.8.20"
 version-compare = "0.2.0"
+zbus = "5.5.0"

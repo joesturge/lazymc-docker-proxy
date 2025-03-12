@@ -28,7 +28,7 @@ project="./tests/bats/legacy-forge"
     wait_for_log "mc-legacy-forge" "RCON running on 0.0.0.0:25575" 300
 
     # wait for the server to be idle
-    wait_for_formatted_log "lazymc-legacy-forge" "INFO" "mc::lazymc::montior" "Server has been idle, sleeping..." 120
+    wait_for_formatted_log "lazymc-legacy-forge" "INFO" "mc::lazymc::monitor" "Server has been idle, sleeping..." 120
 
     # wait for the server to be stopped
     wait_for_formatted_log "lazymc-legacy-forge" "INFO" "mc::lazymc-docker-proxy::command" "Received SIGTERM, stopping server..."
