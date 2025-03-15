@@ -29,6 +29,7 @@ pub fn run<T: Adapter>() {
         let group = config.group();
 
         info!(target: "lazymc-docker-proxy::entrypoint", "Starting lazymc process for group: {}...", group);
+
         let mut child: process::Child = config
             .start_command::<T>()
             .stdout(process::Stdio::piped())
@@ -62,7 +63,7 @@ pub fn run<T: Adapter>() {
     }
 
     // If this app receives a signal, stop all server containers
-    ctrlc::set_handler(move || {
+    ctrlc::set_handler(|| {
         info!(target: "lazymc-docker-proxy::entrypoint", "Received exit signal. Stopping all server containers...");
         T::stop_all_containers();
         exit(0);

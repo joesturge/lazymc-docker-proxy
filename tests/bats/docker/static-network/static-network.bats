@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/static-network"
+project="./tests/bats/docker/static-network"
 
 @test "Client connection test with static network" {
     # stop the client container

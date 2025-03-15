@@ -160,9 +160,11 @@ impl Config {
 
     /// Create the lazymc configuration file
     fn create_file(&self) {
+        debug!(target: "lazymc-docker-proxy::entrypoint::config", "current dir: {}", std::env::current_dir().unwrap().to_str().unwrap());
         let toml = self.as_toml_string();
         let file_name: &String = &format!("lazymc.{}.toml", self.group.clone());
         let path: &Path = Path::new(file_name);
+        debug!(target: "lazymc-docker-proxy::entrypoint::config", "config file: {}", &path.display());
         let mut file = File::create(path).unwrap();
         file.write(toml.as_ref()).unwrap();
         debug!(target: "lazymc-docker-proxy::entrypoint::config", "`generated`: {}\n\n{}", path.display(), toml);
@@ -203,7 +205,7 @@ impl Config {
                     .unwrap_or_else(|| String::from("/server")),
             ),
             command: Some(format!(
-                "lazymc-docker-proxy --command --group {}",
+                "lazymc-docker-proxy --command --adapter systemd --group {}",
                 labels.get("lazymc.group").unwrap()
             )),
             freeze_process: Some(false),

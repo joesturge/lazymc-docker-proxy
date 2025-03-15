@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/legacy-forge"
+project="./tests/bats/docker/legacy-forge"
 
 @test "Legacy Forge - Test lazymc stops server when idle" {
     # restart the lazymc container

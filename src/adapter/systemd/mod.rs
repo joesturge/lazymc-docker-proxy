@@ -10,6 +10,7 @@ use std::process::exit;
 use tokio::runtime::Runtime;
 use zbus::zvariant::OwnedObjectPath;
 use zbus::Connection;
+use zbus::connection::Builder;
 
 mod proxy;
 
@@ -31,8 +32,10 @@ impl SystemdAdapter {
             Ok(dbus_target) if dbus_target == "session" || dbus_target == "user" => {
                 Ok(Connection::session().await)
             }
-            Err(_) => Ok(Connection::session().await),
-            Ok(dbus_target) => Err(dbus_target),
+            Ok(dbus_target) => {
+                Ok(Builder::address(dbus_target.as_str()).unwrap().build().await)
+            }
+            Err(dbus_target) => Err(dbus_target),
         };
 
         connection.unwrap_or_else(|err| {
