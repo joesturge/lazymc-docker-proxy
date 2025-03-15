@@ -1,0 +1,3 @@
+[Build]
+ImageTag=localhost/lazymc-docker-proxy-tests-vanilla
+SetWorkingDirectory=[[LAZYMC_DOCKER_PROXY_DIR]]
