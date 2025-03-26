@@ -1,0 +1,15 @@
+[Container]
+Image=lazymc-docker-proxy-tests-vanilla.build
+PublishPort=25565:25565
+UserNS=keep-id:uid=1000,gid=1000
+UserNS=keep-id:uid=1000,gid=1000
+Environment=RUST_LOG=debug
+Environment=ADAPTER=systemd
+Environment=DBUS_TARGET=unix:path=/run/user/1000/bus
+Volume=/run/user/%U/bus:/run/user/%U/bus
+Volume=lazymc-docker-proxy-tests-vanilla-mc.volume:/server:ro
+
+# https://github.com/mviereck/x11docker/wiki/How-to-connect-container-to-DBus-from-host
+
+[Service]
+Restart=no

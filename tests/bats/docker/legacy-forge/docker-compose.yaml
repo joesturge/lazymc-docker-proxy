@@ -3,21 +3,21 @@ version: '3.7'
 services:
   lazymc-legacy-forge:
     container_name: lazymc-legacy-forge
-    environment:
-      SERVER_ADDRESS: mc-legacy-forge:25565
-      LAZYMC_GROUP: mc
-      TIME_SLEEP_AFTER: 5
-      TIME_MINIMUM_ONLINE_TIME: 30
-      PUBLIC_VERSION: 1.19.2
-      PUBLIC_PROTOCOL: 760
-      SERVER_FORGE: true
+    labels:
+      - lazymc.server.address=mc-legacy-forge:25565
+      - lazymc.group=mc
+      - lazymc.time.sleep_after=5
+      - lazymc.time.minimum_online_time=30
+      - lazymc.public.version=1.19.2
+      - lazymc.public.protocol=760
+      - lazymc.server.forge=true
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../../
+    build: ../../../../
 
   mc-legacy-forge:
     image: itzg/minecraft-server:java21

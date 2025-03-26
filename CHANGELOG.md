@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-03-12
+
+### Added
+
+- Systemd support
+
+### Changed
+
+- Removed deprecated environment variable configuration
+
 ## [2.7.2] - 2025-01-27
 
 ### Security
