@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/vanilla"
+project="./tests/bats/docker/vanilla"
 
 @test "Vanilla - Test lazymc stops server when idle" {
     # restart the lazymc container
