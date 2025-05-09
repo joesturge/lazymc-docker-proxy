@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/multi-server"
+project="./tests/bats/docker/multi-server"
 
 @test "Multiple Servers - Test primary and secondary servers stop when idle" {
     # restart the lazymc container

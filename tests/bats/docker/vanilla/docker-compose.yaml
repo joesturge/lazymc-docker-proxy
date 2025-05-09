@@ -9,7 +9,7 @@ services:
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../../
+    build: ../../../../
 
   mc-vanilla:
     image: itzg/minecraft-server:java21

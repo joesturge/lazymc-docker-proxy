@@ -1,20 +1,23 @@
 use std::{process, thread, time::Duration};
 
-use crate::docker;
+use crate::adapter::Adapter;
 
 /// Run the command to start a group
-pub fn run(group: String) {
+pub fn run<T: Adapter>(group: String) {
     info!(target: "lazymc-docker-proxy::command", "Received command to start group: {}", group);
+
     // Set a handler for SIGTERM
     let cloned_group = group.clone();
+
     ctrlc::set_handler(move || {
         info!(target: "lazymc-docker-proxy::command", "Received SIGTERM, stopping server...");
-        docker::stop(cloned_group.clone());
+        T::stop(&cloned_group);
         process::exit(0);
-    }).unwrap();
+    })
+    .unwrap();
 
     // Start the command
-    docker::start(group.clone());
+    T::start(&group);
 
     // Wait for SIGTERM
     loop {
