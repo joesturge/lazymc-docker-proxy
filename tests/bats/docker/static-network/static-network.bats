@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/static-network"
+project="./tests/bats/docker/static-network"
 
 @test "Client connection test with static network" {
     # stop the client container
@@ -22,7 +22,7 @@ project="./tests/bats/static-network"
     #
 
     # wait for lazymc to replace the address in the config
-    wait_for_formatted_log "lazymc-static-network" "DEBUG" "lazymc-docker-proxy::docker" "Resolved address: 172.21.0.3:25565"
+    wait_for_formatted_log "lazymc-static-network" "DEBUG" "lazymc-docker-proxy::adapter::docker" "Resolved address: 172.21.0.3:25565"
 
     # wait for the config to generated
     wait_for_log "lazymc-static-network" "address = \"172.21.0.3:25565\""
