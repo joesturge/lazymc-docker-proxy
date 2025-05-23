@@ -2,7 +2,7 @@
 
 load ../util.bash
 
-project="./tests/bats/unexpected-server-state-recovery"
+project="./tests/bats/docker/unexpected-server-state-recovery"
 
 @test "Client connection test with static network" {
     # stop the client container

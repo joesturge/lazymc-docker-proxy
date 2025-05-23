@@ -21,7 +21,7 @@ services:
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../../
+    build: ../../../../
 
   mc-static-network:
     image: itzg/minecraft-server:java21
@@ -55,7 +55,7 @@ services:
     networks:
       minecraft-network:
         ipv4_address: 172.21.0.4
-    build: ../../bot/
+    build: ../../../bot/
 
 volumes:
   data:
