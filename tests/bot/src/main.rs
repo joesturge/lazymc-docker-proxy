@@ -9,7 +9,7 @@ fn main() {
 }
 
 async fn async_main() {
-    let account = Account::offline(&std::env::var("USERNAME").unwrap_or_else(|_| "bot".to_string()));
+    let account = Account::offline(&std::env::var("USERNAME").unwrap_or_else(|_| String::from("bot")));
         
     let server_ip = std::env::var("SERVER_IP").expect("SERVER_IP environment variable not set");
     let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT environment variable not set");

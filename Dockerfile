@@ -52,7 +52,7 @@ FROM --platform=$BUILDPLATFORM busybox:1.37.0-uclibc AS health-init
 RUN mkdir -p /app && echo "STARTING" > /app/health
 
 # final image
-FROM scratch
+FROM busybox:musl
 
 # setup lazymc version
 ARG LAZYMC_VERSION
@@ -74,6 +74,9 @@ COPY --from=health-init /app/health /app/health
 
 # Set the working directory
 WORKDIR /app
+
+# Ensure we can always write lazymc config files to /app when running rootless / uidmaps
+RUN chmod -R 777 /app
 
 # Set the healthcheck
 HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD ["lazymc-docker-proxy", "--health"]
