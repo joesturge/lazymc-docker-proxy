@@ -8,7 +8,8 @@ use std::path::Path;
 use std::process::{exit, Command};
 use version_compare::Version;
 
-use crate::{docker, health};
+use crate::adapter::Adapter;
+use crate::health::unhealthy;
 
 const DEFAULT_PORT: i32 = 25565;
 
@@ -18,7 +19,7 @@ fn is_legacy(version: Option<String>) -> bool {
         return false;
     }
 
-    return Version::from(version.unwrap().as_ref()) < Version::from("1.20.3");
+    Version::from(version.unwrap().as_ref()) < Version::from("1.20.3")
 }
 
 #[derive(Serialize, Deserialize)]
@@ -73,7 +74,7 @@ struct JoinHoldSection {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-struct JoinForwardSection{
+struct JoinForwardSection {
     address: Option<String>,
     send_proxy_v2: Option<bool>,
 }
@@ -132,21 +133,23 @@ pub struct Config {
 /// Configuration for the lazymc server
 impl Config {
     /// Generate the start command for the lazymc server
-    pub fn start_command(&self) -> Command {
-        // Start the docker container if the IP address has not been resolved
+    pub fn start_command<T: Adapter>(&self) -> Command {
+        // Start the container if the IP address has not been resolved
         if !self.resolved_ip {
-            docker::start(self.group().into());
+            T::start(self.group());
         }
 
         let mut command: Command = Command::new(self.start_command.clone());
+
         command.arg("start");
         command.arg("--config");
         command.arg(self.config_file.clone());
-        return command;
+
+        command
     }
 
     /// Get the group name for the lazymc server
-    pub fn group(&self) -> &str {
+    pub fn group(&self) -> &String {
         &self.group
     }
 
@@ -157,25 +160,28 @@ impl Config {
 
     /// Create the lazymc configuration file
     fn create_file(&self) {
+        debug!(target: "lazymc-docker-proxy::entrypoint::config", "current dir: {}", std::env::current_dir().unwrap().to_str().unwrap());
         let toml = self.as_toml_string();
         let file_name: &String = &format!("lazymc.{}.toml", self.group.clone());
         let path: &Path = Path::new(file_name);
+        debug!(target: "lazymc-docker-proxy::entrypoint::config", "config file: {}", &path.display());
         let mut file = File::create(path).unwrap();
         file.write(toml.as_ref()).unwrap();
         debug!(target: "lazymc-docker-proxy::entrypoint::config", "`generated`: {}\n\n{}", path.display(), toml);
     }
 
     /// Create a new configuration from container labels
-    pub fn from_container_labels(labels: HashMap<String, String>) -> Self {
+    pub fn from_container_labels(labels: &HashMap<String, String>) -> Self {
         // Check for required labels
         labels.get("lazymc.server.address").unwrap_or_else(|| {
             error!(target: "lazymc-docker-proxy::entrypoint::config", "lazymc.server.address is not set");
-            health::unhealthy();
+            unhealthy();
             exit(1);
         });
+
         labels.get("lazymc.group").unwrap_or_else(|| {
             error!(target: "lazymc-docker-proxy::entrypoint::config", "lazymc.group is not set");
-            health::unhealthy();
+            unhealthy();
             exit(1);
         });
 
@@ -186,7 +192,7 @@ impl Config {
             address: labels.get("lazymc.server.address")
                 .and_then(|address| address.to_socket_addrs().ok())
                 .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
-                .and_then(|addr| addr.to_string().parse().ok())
+                .and_then(|addr| Some(addr.to_string()))
                 .or_else(|| {
                     warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address. Falling back to the value provided.");
                     resolved_ip = false;
@@ -196,10 +202,10 @@ impl Config {
                 labels
                     .get("lazymc.server.directory")
                     .cloned()
-                    .unwrap_or_else(|| "/server".to_string()),
+                    .unwrap_or_else(|| String::from("/server")),
             ),
             command: Some(format!(
-                "lazymc-docker-proxy --command --group {}",
+                "lazymc-docker-proxy --command --adapter systemd --group {}",
                 labels.get("lazymc.group").unwrap()
             )),
             freeze_process: Some(false),
@@ -240,10 +246,8 @@ impl Config {
         };
 
         let join_kick_section: JoinKickSection = JoinKickSection {
-            starting: labels
-                .get("lazymc.join.kick.starting").cloned(),
-            stopping: labels
-                .get("lazymc.join.kick.stopping").cloned(),
+            starting: labels.get("lazymc.join.kick.starting").cloned(),
+            stopping: labels.get("lazymc.join.kick.stopping").cloned(),
         };
 
         let join_hold_section: JoinHoldSection = JoinHoldSection {
@@ -253,8 +257,7 @@ impl Config {
         };
 
         let join_forward_section: JoinForwardSection = JoinForwardSection {
-            address: labels
-                .get("lazymc.join.forward.address").cloned(),
+            address: labels.get("lazymc.join.forward.address").cloned(),
             send_proxy_v2: labels
                 .get("lazymc.join.forward.send_proxy_v2")
                 .map(|x| x == "true"),
@@ -264,21 +267,18 @@ impl Config {
             timeout: labels
                 .get("lazymc.join.lobby.timeout")
                 .and_then(|x| x.parse().ok()),
-            message: labels
-                .get("lazymc.join.lobby.message").cloned(),
-            ready_sound: labels
-                .get("lazymc.join.lobby.sound").cloned(),
+            message: labels.get("lazymc.join.lobby.message").cloned(),
+            ready_sound: labels.get("lazymc.join.lobby.sound").cloned(),
         };
 
         let join_section: JoinSection = JoinSection {
             methods: labels
                 .get("lazymc.join.methods")
                 .and_then(|x| {
-                    Some(x.split(",")
-                        .map(|s| s.to_string())
-                        .collect())
-                    .filter(|m: &Vec<String>| !m.is_empty())
-                }).or_else(|| None),
+                    Some(x.split(",").map(|s| s.to_owned()).collect())
+                        .filter(|m: &Vec<String>| !m.is_empty())
+                })
+                .or_else(|| None),
             kick: join_kick_section.clone(),
             hold: join_hold_section.clone(),
             forward: join_forward_section.clone(),
@@ -303,15 +303,11 @@ impl Config {
             sleeping: labels.get("lazymc.motd.sleeping").cloned(),
             starting: labels.get("lazymc.motd.starting").cloned(),
             stopping: labels.get("lazymc.motd.stopping").cloned(),
-            from_server: labels
-                .get("lazymc.motd.from_server")
-                .map(|x| x == "true"),
+            from_server: labels.get("lazymc.motd.from_server").map(|x| x == "true"),
         };
 
         let lockout_section: LockoutSection = LockoutSection {
-            enabled: labels
-                .get("lazymc.lockout.enabled")
-                .map(|x| x == "true"),
+            enabled: labels.get("lazymc.lockout.enabled").map(|x| x == "true"),
             message: labels.get("lazymc.lockout.message").cloned(),
         };
 
@@ -324,14 +320,14 @@ impl Config {
                 true => var("LAZYMC_LEGACY_VERSION")
                     .unwrap_or_else(|err| {
                         error!(target: "lazymc-docker-proxy::entrypoint::config", "LAZYMC_LEGACY_VERSION is not set: {}", err);
-                        health::unhealthy();
+                        unhealthy();
                         exit(1);
                     })
                     .into(),
                 false => var("LAZYMC_VERSION")
                     .unwrap_or_else(|err| {
                         error!(target: "lazymc-docker-proxy::entrypoint::config", "LAZYMC_VERSION is not set: {}", err);
-                        health::unhealthy();
+                        unhealthy();
                         exit(1);
                     })
                     .into(),
@@ -348,8 +344,8 @@ impl Config {
             advanced: advanced_section,
             config: config_section,
             start_command: match is_legacy(labels.get("lazymc.public.version").cloned()) {
-                true => format!("lazymc-legacy"),
-                false => format!("lazymc"),
+                true => String::from("lazymc-legacy"),
+                false => String::from("lazymc"),
             },
             config_file: format!(
                 "lazymc.{}.toml",
@@ -362,117 +358,50 @@ impl Config {
         // Generate the lazymc config file
         config.create_file();
 
-        return config;
+        config
     }
 
-    /// Create a new configuration from environment variables
-    /// 
-    /// # Deprecated
-    #[deprecated(since = "2.1.0", note = "Use `from_container_labels` instead")]
-    pub fn from_env() -> Self {
-        warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");
-        warn!(target: "lazymc-docker-proxy::entrypoint::config", "DEPRECATED: Using Environment Variables to configure lazymc is deprecated. Please use container labels instead.");
-        warn!(target: "lazymc-docker-proxy::entrypoint::config", "       see: https://github.com/joesturge/lazymc-docker-proxy?tab=readme-ov-file#usage");
-        warn!(target: "lazymc-docker-proxy::entrypoint::config", "***************************************************************************************************************");
-
-        
-        let mut labels: HashMap<String, String> = HashMap::new();
-        if let Ok(value) = var("LAZYMC_GROUP") {
-            labels.insert("lazymc.group".to_string(), value.clone());
-            // Stop the server container if it is running
-            docker::stop(value.clone())
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_METHODS") {
-            labels.insert("lazymc.join.methods".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_KICK_STARTING") {
-            labels.insert("lazymc.join.kick.starting".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_KICK_STOPPING") {
-            labels.insert("lazymc.join.kick.stopping".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_HOLD_TIMEOUT") {
-            labels.insert("lazymc.join.hold.timeout".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_FORWARD_ADDRESS") {
-            labels.insert("lazymc.join.forward.address".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_FORWARD_SEND_PROXY_V2") {
-            labels.insert("lazymc.join.forward.send_proxy_v2".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_TIMEOUT") {
-            labels.insert("lazymc.join.lobby.timeout".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_MESSAGE") {
-            labels.insert("lazymc.join.lobby.message".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_JOIN_LOBBY_READY_SOUND") {
-            labels.insert("lazymc.join.lobby.ready_sound".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_LOCKOUT_ENABLED") {
-            labels.insert("lazymc.lockout.enabled".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_LOCKOUT_MESSAGE") {
-            labels.insert("lazymc.lockout.message".to_string(), value);
-        }
-        if let Ok(value) = var("LAZYMC_PORT") {
-            labels.insert("lazymc.port".to_string(), value);
-        }
-        if let Ok(value) = var("MOTD_SLEEPING") {
-            labels.insert("lazymc.motd.sleeping".to_string(), value);
-        }
-        if let Ok(value) = var("MOTD_STARTING") {
-            labels.insert("lazymc.motd.starting".to_string(), value);
-        }
-        if let Ok(value) = var("MOTD_STOPPING") {
-            labels.insert("lazymc.motd.stopping".to_string(), value);
-        }
-        if let Ok(value) = var("MOTD_FROM_SERVER") {
-            labels.insert("lazymc.motd.from_server".to_string(), value);
-        }
-        if let Ok(value) = var("PUBLIC_PROTOCOL") {
-            labels.insert("lazymc.public.protocol".to_string(), value);
-        }
-        if let Ok(value) = var("PUBLIC_VERSION") {
-            labels.insert("lazymc.public.version".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_ADDRESS") {
-            labels.insert("lazymc.server.address".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_BLOCK_BANNED_IPS") {
-            labels.insert("lazymc.server.block_banned_ips".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_DIRECTORY") {
-            labels.insert("lazymc.server.directory".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_DROP_BANNED_IPS") {
-            labels.insert("lazymc.server.drop_banned_ips".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_FORGE") {
-            labels.insert("lazymc.server.forge".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_PROBE_ON_START") {
-            labels.insert("lazymc.server.probe_on_start".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_SEND_PROXY_V2") {
-            labels.insert("lazymc.server.send_proxy_v2".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_START_TIMEOUT") {
-            labels.insert("lazymc.server.start_timeout".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_STOP_TIMEOUT") {
-            labels.insert("lazymc.server.stop_timeout".to_string(), value);
-        }
-        if let Ok(value) = var("SERVER_WAKE_WHITELIST") {
-            labels.insert("lazymc.server.wake_whitelist".to_string(), value);
-        }
-        if let Ok(value) = var("TIME_MINIMUM_ONLINE_TIME") {
-            labels.insert("lazymc.time.minimum_online_time".to_string(), value);
-        }
-        if let Ok(value) = var("TIME_SLEEP_AFTER") {
-            labels.insert("lazymc.time.sleep_after".to_string(), value);
-        }
-
-        return Config::from_container_labels(labels);
+    /// Convert environment map to label equivalent
+    pub fn environment_to_label(environment: HashMap<String, String>) -> HashMap<String, String> {
+        environment
+            .into_iter()
+            .filter_map(|(key, value)| {
+                match key.as_str() {
+                    "LAZYMC_SERVER_ADDRESS"             => Some(("lazymc.server.address", value)),
+                    "LAZYMC_GROUP"                      => Some(("lazymc.group", value)),
+                    "LAZYMC_SERVER_DIRECTORY"           => Some(("lazymc.server.directory", value)),
+                    "LAZYMC_SERVER_WAKE_WHITELIST"      => Some(("lazymc.server.wake_whitelist", value)),
+                    "LAZYMC_SERVER_BLOCK_BANNED_IPS"    => Some(("lazymc.server.block_banned_ips", value)),
+                    "LAZYMC_SERVER_DROP_BANNED_IPS"     => Some(("lazymc.server.drop_banned_ips", value)),
+                    "LAZYMC_SERVER_PROBE_ON_START"      => Some(("lazymc.server.probe_on_start", value)),
+                    "LAZYMC_SERVER_FORGE"               => Some(("lazymc.server.forge", value)),
+                    "LAZYMC_SERVER_START_TIMEOUT"       => Some(("lazymc.server.start_timeout", value)),
+                    "LAZYMC_SERVER_STOP_TIMEOUT"        => Some(("lazymc.server.stop_timeout", value)),
+                    "LAZYMC_SERVER_SEND_PROXY_V2"       => Some(("lazymc.server.send_proxy_v2", value)),
+                    "LAZYMC_TIME_SLEEP_AFTER"           => Some(("lazymc.time.sleep_after", value)),
+                    "LAZYMC_TIME_MINIMUM_ONLINE_TIME"   => Some(("lazymc.time.minimum_online_time", value)),
+                    "LAZYMC_JOIN_KICK_STARTING"         => Some(("lazymc.join.kick.starting", value)),
+                    "LAZYMC_JOIN_KICK_STOPPING"         => Some(("lazymc.join.kick.stopping", value)),
+                    "LAZYMC_JOIN_HOLD_TIMEOUT"          => Some(("lazymc.join.hold.timeout", value)),
+                    "LAZYMC_JOIN_FORWARD_ADDRESS"       => Some(("lazymc.join.forward.address", value)),
+                    "LAZYMC_JOIN_FORWARD_SEND_PROXY_V2" => Some(("lazymc.join.forward.send_proxy_v2", value)),
+                    "LAZYMC_JOIN_LOBBY_TIMEOUT"         => Some(("lazymc.join.lobby.timeout", value)),
+                    "LAZYMC_JOIN_LOBBY_MESSAGE"         => Some(("lazymc.join.lobby.message", value)),
+                    "LAZYMC_JOIN_LOBBY_SOUND"           => Some(("lazymc.join.lobby.sound", value)),
+                    "LAZYMC_JOIN_METHODS"               => Some(("lazymc.join.methods", value)),
+                    "LAZYMC_PORT"                       => Some(("lazymc.port", value)),
+                    "LAZYMC_PUBLIC_VERSION"             => Some(("lazymc.public.version", value)),
+                    "LAZYMC_PUBLIC_PROTOCOL"            => Some(("lazymc.public.protocol", value)),
+                    "LAZYMC_MOTD_SLEEPING"              => Some(("lazymc.motd.sleeping", value)),
+                    "LAZYMC_MOTD_STARTING"              => Some(("lazymc.motd.starting", value)),
+                    "LAZYMC_MOTD_STOPPING"              => Some(("lazymc.motd.stopping", value)),
+                    "LAZYMC_MOTD_FROM_SERVER"           => Some(("lazymc.motd.from_server", value)),
+                    "LAZYMC_LOCKOUT_ENABLED"            => Some(("lazymc.lockout.enabled", value)),
+                    "LAZYMC_LOCKOUT_MESSAGE"            => Some(("lazymc.lockout.message", value)),
+                    _ => None
+                }
+            })
+            .map(|(key, value)| {(key.to_owned(), value.to_owned())})
+            .collect()
     }
 }
