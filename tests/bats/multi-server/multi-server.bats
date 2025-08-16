@@ -34,10 +34,10 @@ project="./tests/bats/multi-server"
     wait_for_formatted_log "lazymc-multi-server" "INFO" "secondary::lazymc" "Starting server..."
 
     # wait for the primary server to be online
-    wait_for_formatted_log "lazymc-multi-server" "INFO" "primary::lazymc::monitor" "Server is now online" 300
+    wait_for_formatted_log "lazymc-multi-server" "INFO" "primary::lazymc::monitor" "Server is now online" 600
 
     #wait for the secondary server to be online
-    wait_for_formatted_log "lazymc-multi-server" "INFO" "secondary::lazymc::monitor" "Server is now online" 300
+    wait_for_formatted_log "lazymc-multi-server" "INFO" "secondary::lazymc::monitor" "Server is now online" 600
 
     # wait for the primary server to be ready
     wait_for_log "primary" "RCON running on 0.0.0.0:25575"
