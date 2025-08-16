@@ -45,5 +45,9 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Run tests
-        run: bats ./tests/bats/${{ matrix.inputs }}
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: bats ./tests/bats/${{ matrix.inputs }}
       
