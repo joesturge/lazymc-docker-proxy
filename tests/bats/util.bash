@@ -12,6 +12,7 @@ setup() {
     reset_timestamp
 
     echo "Building docker compose..." >&3
+    docker builder prune --all --force
     docker compose --project-directory $project build
 
     echo "Starting docker compose..." >&3
