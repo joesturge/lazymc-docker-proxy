@@ -172,7 +172,7 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
     for container in containers {
         let mut labels: HashMap<String, String> = HashMap::new();
         for (key, value) in container.labels.as_ref().unwrap() {
-            labels.insert(key.clone(), value.clone());
+            labels.insert(key.clone(), value.replace("\\n", "\n"));
         }
 
         // parse port from lazymc.server.address label
