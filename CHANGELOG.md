@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Double escaping of linebreaks in MOTD no longer occurs, thanks @shiroyashik
+
+### Security
+
+- Dependabot updates
+
 ## [2.7.2] - 2025-01-27
 
 ### Security
