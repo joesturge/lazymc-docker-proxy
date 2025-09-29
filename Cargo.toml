@@ -12,7 +12,7 @@ futures = "0.3.31"
 log = "0.4"
 pretty_env_logger = "0.5"
 regex = "1.11.3"
-serde = "1.0.227"
+serde = "1.0.228"
 tokio = { version = "1.47.1", default-features = false, features = [
     "rt-multi-thread",
 ] }
