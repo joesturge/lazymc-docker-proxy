@@ -5,6 +5,26 @@
 CLUSTER_NAME="lazymc-test-cluster"
 NAMESPACE="lazymc-test"
 
+# Dump diagnostics for all pods
+dump_diagnostics() {
+    echo "=== DIAGNOSTICS ===" >&3
+    echo "=== All Pods ===" >&3
+    kubectl get pods -n $NAMESPACE -o wide >&3
+    echo "=== All Deployments ===" >&3
+    kubectl get deployments -n $NAMESPACE >&3
+    echo "=== Lazymc-Proxy Pod Description ===" >&3
+    kubectl describe pods -l app=lazymc-proxy -n $NAMESPACE >&3 || echo "No lazymc-proxy pod found" >&3
+    echo "=== Lazymc-Proxy Logs ===" >&3
+    kubectl logs -l app=lazymc-proxy -n $NAMESPACE --tail=100 >&3 || echo "No logs available" >&3
+    echo "=== Minecraft Pod Description ===" >&3
+    kubectl describe pods -l app=minecraft -n $NAMESPACE >&3 || echo "No minecraft pod found" >&3
+    echo "=== Minecraft Logs ===" >&3
+    kubectl logs -l app=minecraft -n $NAMESPACE --tail=100 >&3 || echo "No logs available" >&3
+    echo "=== Events ===" >&3
+    kubectl get events -n $NAMESPACE --sort-by='.lastTimestamp' >&3
+    echo "===================" >&3
+}
+
 # Create a kind cluster
 create_kind_cluster() {
     echo "Creating kind cluster: $CLUSTER_NAME" >&3
@@ -42,7 +62,16 @@ wait_for_pod_ready() {
     local timeout=${2:-60}
     
     echo "Waiting for pod $pod_name to be ready" >&3
-    kubectl wait --for=condition=ready pod -l app=$pod_name -n $NAMESPACE --timeout=${timeout}s
+    if ! kubectl wait --for=condition=ready pod -l app=$pod_name -n $NAMESPACE --timeout=${timeout}s; then
+        echo "ERROR: Pod $pod_name failed to become ready. Diagnostics:" >&3
+        echo "=== Pod Status ===" >&3
+        kubectl get pods -l app=$pod_name -n $NAMESPACE -o wide >&3
+        echo "=== Pod Description ===" >&3
+        kubectl describe pods -l app=$pod_name -n $NAMESPACE >&3
+        echo "=== Pod Logs ===" >&3
+        kubectl logs -l app=$pod_name -n $NAMESPACE --tail=100 >&3 || echo "No logs available" >&3
+        return 1
+    fi
 }
 
 # Get pod logs
@@ -69,7 +98,11 @@ wait_for_pod_log() {
     until get_pod_logs $pod_name | grep -q "$logline";
     do
         if [ $timeout -eq 0 ]; then
-            echo "Timeout waiting for log: $logline" >&3
+            echo "ERROR: Timeout waiting for log: $logline" >&3
+            echo "=== Pod Status ===" >&3
+            kubectl get pods -l app=$pod_name -n $NAMESPACE -o wide >&3
+            echo "=== Recent Pod Logs (last 50 lines) ===" >&3
+            kubectl logs -l app=$pod_name -n $NAMESPACE --tail=50 >&3 || echo "No logs available" >&3
             exit 1
         fi
         sleep 1
@@ -93,7 +126,11 @@ wait_for_pod_formatted_log() {
     until get_pod_logs $pod_name | grep -qE "$regex";
     do
         if [ $timeout -eq 0 ]; then
-            echo "Timeout waiting for log: $logline" >&3
+            echo "ERROR: Timeout waiting for formatted log: $level $target > $logline" >&3
+            echo "=== Pod Status ===" >&3
+            kubectl get pods -l app=$pod_name -n $NAMESPACE -o wide >&3
+            echo "=== Recent Pod Logs (last 50 lines) ===" >&3
+            kubectl logs -l app=$pod_name -n $NAMESPACE --tail=50 >&3 || echo "No logs available" >&3
             exit 1
         fi
         sleep 1

@@ -18,7 +18,11 @@ setup_file() {
     
     # Wait for lazymc-proxy to be ready
     sleep 10
-    wait_for_pod_ready lazymc-proxy 120
+    if ! wait_for_pod_ready lazymc-proxy 120; then
+        echo "Setup failed: lazymc-proxy pod not ready" >&3
+        dump_diagnostics
+        exit 1
+    fi
 }
 
 teardown_file() {
