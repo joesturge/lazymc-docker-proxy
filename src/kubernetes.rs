@@ -181,54 +181,115 @@ pub fn stop_all_pods() {
 }
 
 /// Get all labels for pods with the label "lazymc.enabled=true"
+/// If no pods are running, checks Deployments and StatefulSets instead
 pub fn get_pod_labels() -> Vec<HashMap<std::string::String, std::string::String>> {
     let client = connect();
     
     Runtime::new().unwrap().block_on(async {
-        let pods: Api<Pod> = Api::default_namespaced(client);
+        let pods: Api<Pod> = Api::default_namespaced(client.clone());
         let lp = ListParams::default()
             .labels("lazymc.enabled=true");
         
         match pods.list(&lp).await {
             Ok(pod_list) => {
-                debug!(target: "lazymc-docker-proxy::kubernetes", "Found {} pod(s) to get labels", pod_list.items.len());
-                
-                let mut label_sets: Vec<HashMap<String, String>> = Vec::new();
-                
-                for pod in pod_list.items {
-                    if let Some(labels) = pod.metadata.labels {
-                        let mut processed_labels: HashMap<String, String> = HashMap::new();
-                        for (key, value) in labels {
-                            processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
-                        }
-                        
-                        // Get pod IP if available
-                        if let Some(status) = pod.status {
-                            if let Some(pod_ip) = status.pod_ip {
-                                // Parse port from lazymc.server.address label if it exists
-                                let port: Option<u16> = processed_labels
-                                    .get("lazymc.server.address")
-                                    .and_then(|address| address.rsplit(':').next())
-                                    .and_then(|port_str| port_str.parse().ok());
-                                
-                                if let Some(port) = port {
-                                    let address = format!("{}:{}", pod_ip, port);
-                                    debug!(target: "lazymc-docker-proxy::kubernetes", "Resolved address: {}", address);
-                                    processed_labels.insert("lazymc.server.address".to_string(), address);
+                if !pod_list.items.is_empty() {
+                    debug!(target: "lazymc-docker-proxy::kubernetes", "Found {} pod(s) to get labels", pod_list.items.len());
+                    
+                    let mut label_sets: Vec<HashMap<String, String>> = Vec::new();
+                    
+                    for pod in pod_list.items {
+                        if let Some(labels) = pod.metadata.labels {
+                            let mut processed_labels: HashMap<String, String> = HashMap::new();
+                            for (key, value) in labels {
+                                processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
+                            }
+                            
+                            // Get pod IP if available
+                            if let Some(status) = pod.status {
+                                if let Some(pod_ip) = status.pod_ip {
+                                    // Parse port from lazymc.server.address label if it exists
+                                    let port: Option<u16> = processed_labels
+                                        .get("lazymc.server.address")
+                                        .and_then(|address| address.rsplit(':').next())
+                                        .and_then(|port_str| port_str.parse().ok());
+                                    
+                                    if let Some(port) = port {
+                                        let address = format!("{}:{}", pod_ip, port);
+                                        debug!(target: "lazymc-docker-proxy::kubernetes", "Resolved address: {}", address);
+                                        processed_labels.insert("lazymc.server.address".to_string(), address);
+                                    }
                                 }
                             }
+                            
+                            label_sets.push(processed_labels);
                         }
-                        
-                        label_sets.push(processed_labels);
                     }
+                    
+                    return label_sets;
                 }
-                
-                return label_sets;
             }
             Err(err) => {
                 error!(target: "lazymc-docker-proxy::kubernetes", "Error listing pods: {}", err);
-                return Vec::new();
             }
         }
+        
+        // If no pods found, check Deployments
+        use k8s_openapi::api::apps::v1::{Deployment, StatefulSet};
+        
+        let deployments: Api<Deployment> = Api::default_namespaced(client.clone());
+        let lp = ListParams::default()
+            .labels("lazymc.enabled=true");
+        
+        let mut label_sets: Vec<HashMap<String, String>> = Vec::new();
+        
+        match deployments.list(&lp).await {
+            Ok(deployment_list) => {
+                debug!(target: "lazymc-docker-proxy::kubernetes", "Found {} deployment(s) to get labels", deployment_list.items.len());
+                
+                for deployment in deployment_list.items {
+                    if let Some(spec) = deployment.spec {
+                        if let Some(template) = spec.template.metadata {
+                            if let Some(labels) = template.labels {
+                                let mut processed_labels: HashMap<String, String> = HashMap::new();
+                                for (key, value) in labels {
+                                    processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
+                                }
+                                label_sets.push(processed_labels);
+                            }
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                error!(target: "lazymc-docker-proxy::kubernetes", "Error listing deployments: {}", err);
+            }
+        }
+        
+        // Also check StatefulSets
+        let statefulsets: Api<StatefulSet> = Api::default_namespaced(client.clone());
+        match statefulsets.list(&lp).await {
+            Ok(statefulset_list) => {
+                debug!(target: "lazymc-docker-proxy::kubernetes", "Found {} statefulset(s) to get labels", statefulset_list.items.len());
+                
+                for statefulset in statefulset_list.items {
+                    if let Some(spec) = statefulset.spec {
+                        if let Some(template) = spec.template.metadata {
+                            if let Some(labels) = template.labels {
+                                let mut processed_labels: HashMap<String, String> = HashMap::new();
+                                for (key, value) in labels {
+                                    processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
+                                }
+                                label_sets.push(processed_labels);
+                            }
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                error!(target: "lazymc-docker-proxy::kubernetes", "Error listing statefulsets: {}", err);
+            }
+        }
+        
+        return label_sets;
     })
 }
