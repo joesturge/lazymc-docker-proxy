@@ -403,6 +403,20 @@ spec:
         ports:
         - containerPort: 25565
           name: minecraft-proxy
+        readinessProbe:
+          exec:
+            command:
+            - lazymc-docker-proxy
+            - --health
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - lazymc-docker-proxy
+            - --health
+          initialDelaySeconds: 60
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
