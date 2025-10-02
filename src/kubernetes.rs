@@ -198,29 +198,43 @@ pub fn get_pod_labels() -> Vec<HashMap<std::string::String, std::string::String>
                     let mut label_sets: Vec<HashMap<String, String>> = Vec::new();
                     
                     for pod in pod_list.items {
+                        let mut processed_labels: HashMap<String, String> = HashMap::new();
+                        
+                        // Get labels
                         if let Some(labels) = pod.metadata.labels {
-                            let mut processed_labels: HashMap<String, String> = HashMap::new();
                             for (key, value) in labels {
                                 processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
                             }
-                            
-                            // Get pod IP if available
-                            if let Some(status) = pod.status {
-                                if let Some(pod_ip) = status.pod_ip {
-                                    // Parse port from lazymc.server.address label if it exists
-                                    let port: Option<u16> = processed_labels
-                                        .get("lazymc.server.address")
-                                        .and_then(|address| address.rsplit(':').next())
-                                        .and_then(|port_str| port_str.parse().ok());
-                                    
-                                    if let Some(port) = port {
-                                        let address = format!("{}:{}", pod_ip, port);
-                                        debug!(target: "lazymc-docker-proxy::kubernetes", "Resolved address: {}", address);
-                                        processed_labels.insert("lazymc.server.address".to_string(), address);
-                                    }
+                        }
+                        
+                        // Get annotations (these can contain any characters, so we use them for config)
+                        if let Some(annotations) = pod.metadata.annotations {
+                            for (key, value) in annotations {
+                                // Only include lazymc annotations
+                                if key.starts_with("lazymc.") {
+                                    processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
                                 }
                             }
-                            
+                        }
+                        
+                        // Get pod IP if available
+                        if let Some(status) = pod.status {
+                            if let Some(pod_ip) = status.pod_ip {
+                                // Parse port from lazymc.server.address annotation if it exists
+                                let port: Option<u16> = processed_labels
+                                    .get("lazymc.server.address")
+                                    .and_then(|address| address.rsplit(':').next())
+                                    .and_then(|port_str| port_str.parse().ok());
+                                
+                                if let Some(port) = port {
+                                    let address = format!("{}:{}", pod_ip, port);
+                                    debug!(target: "lazymc-docker-proxy::kubernetes", "Resolved address: {}", address);
+                                    processed_labels.insert("lazymc.server.address".to_string(), address);
+                                }
+                            }
+                        }
+                        
+                        if !processed_labels.is_empty() {
                             label_sets.push(processed_labels);
                         }
                     }
@@ -249,11 +263,26 @@ pub fn get_pod_labels() -> Vec<HashMap<std::string::String, std::string::String>
                 for deployment in deployment_list.items {
                     if let Some(spec) = deployment.spec {
                         if let Some(template) = spec.template.metadata {
+                            let mut processed_labels: HashMap<String, String> = HashMap::new();
+                            
+                            // Get labels
                             if let Some(labels) = template.labels {
-                                let mut processed_labels: HashMap<String, String> = HashMap::new();
                                 for (key, value) in labels {
                                     processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
                                 }
+                            }
+                            
+                            // Get annotations (these can contain any characters, so we use them for config)
+                            if let Some(annotations) = template.annotations {
+                                for (key, value) in annotations {
+                                    // Only include lazymc annotations
+                                    if key.starts_with("lazymc.") {
+                                        processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
+                                    }
+                                }
+                            }
+                            
+                            if !processed_labels.is_empty() {
                                 label_sets.push(processed_labels);
                             }
                         }
@@ -274,11 +303,26 @@ pub fn get_pod_labels() -> Vec<HashMap<std::string::String, std::string::String>
                 for statefulset in statefulset_list.items {
                     if let Some(spec) = statefulset.spec {
                         if let Some(template) = spec.template.metadata {
+                            let mut processed_labels: HashMap<String, String> = HashMap::new();
+                            
+                            // Get labels
                             if let Some(labels) = template.labels {
-                                let mut processed_labels: HashMap<String, String> = HashMap::new();
                                 for (key, value) in labels {
                                     processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
                                 }
+                            }
+                            
+                            // Get annotations (these can contain any characters, so we use them for config)
+                            if let Some(annotations) = template.annotations {
+                                for (key, value) in annotations {
+                                    // Only include lazymc annotations
+                                    if key.starts_with("lazymc.") {
+                                        processed_labels.insert(key.clone(), value.replace("\\n", "\n"));
+                                    }
+                                }
+                            }
+                            
+                            if !processed_labels.is_empty() {
                                 label_sets.push(processed_labels);
                             }
                         }

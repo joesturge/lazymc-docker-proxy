@@ -342,6 +342,7 @@ spec:
         app: minecraft
         lazymc.enabled: "true"
         lazymc.group: "mc"
+      annotations:
         lazymc.server.address: "minecraft-server:25565"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "60"
@@ -423,19 +424,37 @@ spec:
 When running on Kubernetes:
 
 - **Scaling instead of start/stop**: The proxy scales Deployments/StatefulSets to 0 when idle and to 1 (or their configured replica count) when players connect
-- **Labels on Deployments**: Apply labels to the Deployment/StatefulSet metadata and pod template metadata
+- **Labels and Annotations**: Use labels for simple identifiers (like `lazymc.enabled` and `lazymc.group`) and annotations for configuration values that may contain special characters (like addresses with ports)
 - **Pod IPs**: Kubernetes automatically assigns pod IPs, which are used by lazymc to connect to the server
 - **RBAC Required**: The proxy needs permissions to list pods and patch deployments/statefulsets
 - **Service Account**: The proxy pod must use a ServiceAccount with the appropriate Role
 
-### Kubernetes Labels
+### Kubernetes Labels and Annotations
 
-The same labels used for Docker containers work on Kubernetes. Apply them to both the Deployment metadata and the pod template metadata:
+Configuration in Kubernetes uses both labels and annotations on pod template metadata:
 
-- **lazymc.enabled=true** - Enable management by lazymc-docker-proxy
-- **lazymc.group** - Identifier for the server group
+**Labels** (for identification and selection):
+- **lazymc.enabled=true** - Enable management by lazymc-docker-proxy (required for selection)
+- **lazymc.group** - Identifier for the server group (required)
+
+**Annotations** (for configuration values):
 - **lazymc.server.address** - Service name and port (e.g., `minecraft-server:25565`)
-- All other lazymc configuration labels work the same way
+- All other lazymc configuration options (times, messages, etc.)
+
+Example:
+```yaml
+template:
+  metadata:
+    labels:
+      app: minecraft
+      lazymc.enabled: "true"
+      lazymc.group: "mc"
+    annotations:
+      lazymc.server.address: "minecraft-server:25565"
+      lazymc.time.sleep_after: "60"
+```
+
+> **Note**: Kubernetes labels have character restrictions (alphanumeric, `-`, `_`, `.` only), so configuration values that may contain colons or other special characters must use annotations instead.
 
 ### Configuration using labels
 
