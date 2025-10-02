@@ -122,9 +122,6 @@ spec:
       - name: lazymc-proxy
         image: lazymc-docker-proxy:test
         imagePullPolicy: Never
-        env:
-        - name: LAZYMC_BACKEND
-          value: "kubernetes"
         ports:
         - containerPort: 25565
           name: minecraft-proxy

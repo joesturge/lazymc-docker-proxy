@@ -263,13 +263,23 @@ volumes:
 
 `lazymc-docker-proxy` now supports running on Kubernetes! Instead of managing Docker containers, it can manage Kubernetes Deployments and StatefulSets by scaling them up when players connect and down when the server is idle.
 
+### Backend Auto-Detection
+
+The proxy automatically detects whether it's running in Docker or Kubernetes:
+- **Kubernetes**: Detected by the presence of `/var/run/secrets/kubernetes.io/serviceaccount/token`
+- **Docker**: Detected by the presence of `/var/run/docker.sock`
+
+You can also explicitly set the backend using the `LAZYMC_BACKEND` environment variable:
+- `LAZYMC_BACKEND=kubernetes` or `k8s` - Force Kubernetes backend
+- `LAZYMC_BACKEND=docker` - Force Docker backend
+
 ### Kubernetes Setup
 
 To use `lazymc-docker-proxy` with Kubernetes, you need to:
 
-1. Set the `LAZYMC_BACKEND` environment variable to `kubernetes` (or `k8s`)
-2. Provide appropriate RBAC permissions for the proxy to manage pods and deployments
-3. Label your Minecraft server Deployments/StatefulSets with the same labels you would use for Docker containers
+1. Provide appropriate RBAC permissions for the proxy to manage pods and deployments
+2. Label your Minecraft server Deployments/StatefulSets with the same labels you would use for Docker containers
+3. (Optional) Set `LAZYMC_BACKEND=kubernetes` to explicitly use Kubernetes mode (auto-detected by default)
 
 Here's a complete example:
 
@@ -385,9 +395,10 @@ spec:
       containers:
       - name: lazymc-proxy
         image: ghcr.io/joesturge/lazymc-docker-proxy:latest
-        env:
-        - name: LAZYMC_BACKEND
-          value: "kubernetes"
+        # LAZYMC_BACKEND is auto-detected, but can be explicitly set:
+        # env:
+        # - name: LAZYMC_BACKEND
+        #   value: "kubernetes"
         ports:
         - containerPort: 25565
           name: minecraft-proxy

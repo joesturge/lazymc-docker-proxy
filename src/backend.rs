@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::path::Path;
 
 /// Backend types supported by lazymc-docker-proxy
 #[derive(Debug, Clone, PartialEq)]
@@ -9,12 +10,41 @@ pub enum BackendType {
 }
 
 impl BackendType {
-    /// Detect backend type from environment variable
-    pub fn from_env() -> Self {
-        match env::var("LAZYMC_BACKEND").as_ref().map(|s| s.as_str()) {
-            Ok("kubernetes") | Ok("k8s") => BackendType::Kubernetes,
-            _ => BackendType::Docker, // Default to Docker for backward compatibility
+    /// Detect backend type from environment variable or auto-detect
+    pub fn detect() -> Self {
+        // First check if explicitly set via environment variable
+        if let Ok(backend) = env::var("LAZYMC_BACKEND") {
+            return match backend.as_str() {
+                "kubernetes" | "k8s" => BackendType::Kubernetes,
+                "docker" => BackendType::Docker,
+                _ => {
+                    warn!(target: "lazymc-docker-proxy::backend", "Unknown LAZYMC_BACKEND value: {}, falling back to auto-detection", backend);
+                    Self::auto_detect()
+                }
+            };
         }
+        
+        // Auto-detect based on environment
+        Self::auto_detect()
+    }
+    
+    /// Auto-detect if running in Kubernetes or Docker
+    fn auto_detect() -> Self {
+        // Check for Kubernetes service account token (standard location in k8s pods)
+        if Path::new("/var/run/secrets/kubernetes.io/serviceaccount/token").exists() {
+            info!(target: "lazymc-docker-proxy::backend", "Auto-detected Kubernetes environment");
+            return BackendType::Kubernetes;
+        }
+        
+        // Check for Docker socket
+        if Path::new("/var/run/docker.sock").exists() {
+            info!(target: "lazymc-docker-proxy::backend", "Auto-detected Docker environment");
+            return BackendType::Docker;
+        }
+        
+        // Default to Docker for backward compatibility
+        warn!(target: "lazymc-docker-proxy::backend", "Could not auto-detect environment, defaulting to Docker");
+        BackendType::Docker
     }
 }
 
@@ -69,8 +99,8 @@ impl Backend for KubernetesBackend {
 }
 
 /// Get the appropriate backend based on environment configuration
-pub fn get_backend() -> Box<dyn Backend> {
-    match BackendType::from_env() {
+pub fn create() -> Box<dyn Backend> {
+    match BackendType::detect() {
         BackendType::Docker => {
             info!(target: "lazymc-docker-proxy::backend", "Using Docker backend");
             Box::new(DockerBackend)
