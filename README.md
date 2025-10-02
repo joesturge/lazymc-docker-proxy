@@ -330,6 +330,7 @@ metadata:
   labels:
     app: minecraft
     lazymc.enabled: "true"
+  annotations:
     lazymc.group: "mc"
 spec:
   replicas: 0  # Start with 0 replicas, lazymc will scale it up

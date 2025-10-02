@@ -23,6 +23,7 @@ metadata:
   labels:
     app: minecraft
     lazymc.enabled: "true"
+  annotations:
     lazymc.group: "mc"
 spec:
   replicas: 0
