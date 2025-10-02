@@ -5,7 +5,6 @@ load k8s-util
 setup_file() {
     # Build the docker image
     echo "Building lazymc-docker-proxy image..." >&3
-    cd /home/runner/work/lazymc-docker-proxy/lazymc-docker-proxy
     docker build -t lazymc-docker-proxy:test .
     
     # Create kind cluster
