@@ -341,8 +341,8 @@ spec:
       labels:
         app: minecraft
         lazymc.enabled: "true"
-        lazymc.group: "mc"
       annotations:
+        lazymc.group: "mc"
         lazymc.server.address: "minecraft-server:25565"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "60"
@@ -435,9 +435,9 @@ Configuration in Kubernetes uses both labels and annotations on pod template met
 
 **Labels** (for identification and selection):
 - **lazymc.enabled=true** - Enable management by lazymc-docker-proxy (required for selection)
-- **lazymc.group** - Identifier for the server group (required)
 
-**Annotations** (for configuration values):
+**Annotations** (for all configuration):
+- **lazymc.group** - Identifier for the server group (required)
 - **lazymc.server.address** - Service name and port (e.g., `minecraft-server:25565`)
 - All other lazymc configuration options (times, messages, etc.)
 
@@ -448,13 +448,13 @@ template:
     labels:
       app: minecraft
       lazymc.enabled: "true"
-      lazymc.group: "mc"
     annotations:
+      lazymc.group: "mc"
       lazymc.server.address: "minecraft-server:25565"
       lazymc.time.sleep_after: "60"
 ```
 
-> **Note**: Kubernetes labels have character restrictions (alphanumeric, `-`, `_`, `.` only), so configuration values that may contain colons or other special characters must use annotations instead.
+> **Note**: Kubernetes labels have strict character restrictions (alphanumeric, `-`, `_`, `.` only). To keep the configuration consistent and avoid validation issues, all lazymc configuration properties should use annotations, with only `lazymc.enabled` as a label for resource selection.
 
 ### Configuration using labels
 
