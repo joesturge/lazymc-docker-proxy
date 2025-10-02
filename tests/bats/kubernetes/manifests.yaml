@@ -23,7 +23,6 @@ metadata:
   labels:
     app: minecraft
     lazymc.enabled: "true"
-  annotations:
     lazymc.group: "mc"
 spec:
   replicas: 0
@@ -35,8 +34,8 @@ spec:
       labels:
         app: minecraft
         lazymc.enabled: "true"
-      annotations:
         lazymc.group: "mc"
+      annotations:
         lazymc.server.address: "minecraft-server:25565"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "5"

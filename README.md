@@ -330,7 +330,6 @@ metadata:
   labels:
     app: minecraft
     lazymc.enabled: "true"
-  annotations:
     lazymc.group: "mc"
 spec:
   replicas: 0  # Start with 0 replicas, lazymc will scale it up
@@ -342,8 +341,8 @@ spec:
       labels:
         app: minecraft
         lazymc.enabled: "true"
-      annotations:
         lazymc.group: "mc"
+      annotations:
         lazymc.server.address: "minecraft-server:25565"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "60"
@@ -434,11 +433,11 @@ When running on Kubernetes:
 
 Configuration in Kubernetes uses both labels and annotations on pod template metadata:
 
-**Labels** (for identification and selection):
-- **lazymc.enabled=true** - Enable management by lazymc-docker-proxy (required for selection)
+**Labels** (for efficient filtering and selection):
+- **lazymc.enabled=true** - Enable management by lazymc-docker-proxy (required)
+- **lazymc.group** - Identifier for the server group (required, enables filtering by group)
 
-**Annotations** (for all configuration):
-- **lazymc.group** - Identifier for the server group (required)
+**Annotations** (for all other configuration):
 - **lazymc.server.address** - Service name and port (e.g., `minecraft-server:25565`)
 - All other lazymc configuration options (times, messages, etc.)
 
@@ -449,13 +448,13 @@ template:
     labels:
       app: minecraft
       lazymc.enabled: "true"
-    annotations:
       lazymc.group: "mc"
+    annotations:
       lazymc.server.address: "minecraft-server:25565"
       lazymc.time.sleep_after: "60"
 ```
 
-> **Note**: Kubernetes labels have strict character restrictions (alphanumeric, `-`, `_`, `.` only). To keep the configuration consistent and avoid validation issues, all lazymc configuration properties should use annotations, with only `lazymc.enabled` as a label for resource selection.
+> **Note**: Labels allow efficient filtering (e.g., finding all enabled servers in a specific group). Annotations are used for configuration values that may contain special characters like colons.
 
 ### Configuration using labels
 
