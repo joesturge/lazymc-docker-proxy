@@ -259,6 +259,217 @@ volumes:
   data:
 ```
 
+## Kubernetes Support
+
+`lazymc-docker-proxy` now supports running on Kubernetes! Instead of managing Docker containers, it can manage Kubernetes Deployments and StatefulSets by scaling them up when players connect and down when the server is idle.
+
+### Backend Auto-Detection
+
+The proxy automatically detects whether it's running in Docker or Kubernetes:
+- **Kubernetes**: Detected by the presence of `/var/run/secrets/kubernetes.io/serviceaccount/token`
+- **Docker**: Detected by the presence of `/var/run/docker.sock`
+
+You can also explicitly set the backend using the `LAZYMC_BACKEND` environment variable:
+- `LAZYMC_BACKEND=kubernetes` or `k8s` - Force Kubernetes backend
+- `LAZYMC_BACKEND=docker` - Force Docker backend
+
+### Kubernetes Setup
+
+To use `lazymc-docker-proxy` with Kubernetes, you need to:
+
+1. Provide appropriate RBAC permissions for the proxy to manage pods and deployments
+2. Label your Minecraft server Deployments/StatefulSets with the same labels you would use for Docker containers
+3. (Optional) Set `LAZYMC_BACKEND=kubernetes` to explicitly use Kubernetes mode (auto-detected by default)
+
+Here's a complete example:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minecraft
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lazymc-proxy
+  namespace: minecraft
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: lazymc-proxy-role
+  namespace: minecraft
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lazymc-proxy-binding
+  namespace: minecraft
+subjects:
+- kind: ServiceAccount
+  name: lazymc-proxy
+  namespace: minecraft
+roleRef:
+  kind: Role
+  name: lazymc-proxy-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-server
+  namespace: minecraft
+  labels:
+    app: minecraft
+    lazymc.enabled: "true"
+    lazymc.group: "mc"
+spec:
+  replicas: 0  # Start with 0 replicas, lazymc will scale it up
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+        lazymc.enabled: "true"
+        lazymc.group: "mc"
+      annotations:
+        lazymc.server.address: "minecraft-server:25565"
+        lazymc.time.minimum_online_time: "30"
+        lazymc.time.sleep_after: "60"
+    spec:
+      containers:
+      - name: minecraft
+        image: itzg/minecraft-server:java21
+        env:
+        - name: EULA
+          value: "TRUE"
+        ports:
+        - containerPort: 25565
+          name: minecraft
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: minecraft-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft-server
+  namespace: minecraft
+spec:
+  selector:
+    app: minecraft
+  ports:
+  - protocol: TCP
+    port: 25565
+    targetPort: 25565
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lazymc-proxy
+  namespace: minecraft
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lazymc-proxy
+  template:
+    metadata:
+      labels:
+        app: lazymc-proxy
+    spec:
+      serviceAccountName: lazymc-proxy
+      containers:
+      - name: lazymc-proxy
+        image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+        # LAZYMC_BACKEND is auto-detected, but can be explicitly set:
+        # env:
+        # - name: LAZYMC_BACKEND
+        #   value: "kubernetes"
+        ports:
+        - containerPort: 25565
+          name: minecraft-proxy
+        readinessProbe:
+          exec:
+            command:
+            - lazymc-docker-proxy
+            - --health
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - lazymc-docker-proxy
+            - --health
+          initialDelaySeconds: 60
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lazymc-proxy
+  namespace: minecraft
+spec:
+  type: LoadBalancer
+  selector:
+    app: lazymc-proxy
+  ports:
+  - protocol: TCP
+    port: 25565
+    targetPort: 25565
+```
+
+### Key Differences from Docker
+
+When running on Kubernetes:
+
+- **Scaling instead of start/stop**: The proxy scales Deployments/StatefulSets to 0 when idle and to 1 (or their configured replica count) when players connect
+- **Labels and Annotations**: Use labels for simple identifiers (like `lazymc.enabled` and `lazymc.group`) and annotations for configuration values that may contain special characters (like addresses with ports)
+- **Pod IPs**: Kubernetes automatically assigns pod IPs, which are used by lazymc to connect to the server
+- **RBAC Required**: The proxy needs permissions to list pods and patch deployments/statefulsets
+- **Service Account**: The proxy pod must use a ServiceAccount with the appropriate Role
+
+### Kubernetes Labels and Annotations
+
+Configuration in Kubernetes uses both labels and annotations on pod template metadata:
+
+**Labels** (for efficient filtering and selection):
+- **lazymc.enabled=true** - Enable management by lazymc-docker-proxy (required)
+- **lazymc.group** - Identifier for the server group (required, enables filtering by group)
+
+**Annotations** (for all other configuration):
+- **lazymc.server.address** - Service name and port (e.g., `minecraft-server:25565`)
+- All other lazymc configuration options (times, messages, etc.)
+
+Example:
+```yaml
+template:
+  metadata:
+    labels:
+      app: minecraft
+      lazymc.enabled: "true"
+      lazymc.group: "mc"
+    annotations:
+      lazymc.server.address: "minecraft-server:25565"
+      lazymc.time.sleep_after: "60"
+```
+
+> **Note**: Labels allow efficient filtering (e.g., finding all enabled servers in a specific group). Annotations are used for configuration values that may contain special characters like colons.
+
 ### Configuration using labels
 
 The suggested way to manage the lazymc settings on your minecraft containers is to use container labels.

@@ -9,10 +9,13 @@ bollard = "0.18.1"
 clap = { version = "4.5.48", features = ["derive"] }
 ctrlc = { version = "3.5.0", features = ["termination"] }
 futures = "0.3.31"
+k8s-openapi = { version = "0.23.0", features = ["v1_31"] }
+kube = { version = "0.96.0", features = ["runtime", "derive"] }
 log = "0.4"
 pretty_env_logger = "0.5"
 regex = "1.11.3"
 serde = "1.0.228"
+serde_json = "1.0"
 tokio = { version = "1.47.1", default-features = false, features = [
     "rt-multi-thread",
 ] }

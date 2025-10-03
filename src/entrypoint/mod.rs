@@ -2,17 +2,19 @@ mod config;
 use config::Config;
 use log::Level;
 use regex::Regex;
-use std::{io::{BufRead, BufReader}, process::{self, exit}};
+use std::{io::{BufRead, BufReader}, process::{self, exit}, sync::Arc};
 
-use crate::{docker, health::{self}};
+use crate::{backend, health::{self}};
 
 /// Entrypoint for the application
 pub fn run() {
+    let backend = Arc::new(backend::create());
+    
     // Ensure all server containers are stopped before starting
     info!(target: "lazymc-docker-proxy::entrypoint", "Ensuring all server containers are stopped...");
-    docker::stop_all_containers();
+    backend.stop_all();
 
-    let labels_list = docker::get_container_labels();
+    let labels_list = backend.get_labels();
     let mut configs: Vec<Config> = Vec::new();
     let mut children: Vec<process::Child> = Vec::new();
 
@@ -55,9 +57,10 @@ pub fn run() {
     }
 
     // If this app receives a signal, stop all server containers
+    let backend_for_handler = Arc::clone(&backend);
     ctrlc::set_handler(move || {
         info!(target: "lazymc-docker-proxy::entrypoint", "Received exit signal. Stopping all server containers...");
-        docker::stop_all_containers();
+        backend_for_handler.stop_all();
         exit(0);
     }).unwrap();
 
@@ -96,7 +99,8 @@ fn handle_log(group: &String, level: &Level, message: &String) {
     match (level, message.as_str()) {
         (Level::Warn, "Failed to stop server, no more suitable stopping method to use") => {
             warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group.clone());
-            docker::stop(group.clone());
+            let backend = backend::create();
+            backend.stop(group.clone());
             info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group.clone());
         }
         _ => {}
