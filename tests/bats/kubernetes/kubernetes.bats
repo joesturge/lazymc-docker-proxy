@@ -54,7 +54,8 @@ teardown_file() {
     [ "$replicas" -eq 0 ]
     
     # Connect client to trigger server start
-    kubectl exec -n lazymc-test minecraft-client -- mc-monitor status --host lazymc-proxy --port 25565 || true
+    CLIENT_POD=$(kubectl get pods -n lazymc-test -l app=minecraft-client -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec -n lazymc-test $CLIENT_POD -- mc-monitor status --host lazymc-proxy --port 25565 || true
     
     # Wait for lazymc to start the server (it should scale up the deployment)
     wait_for_pod_formatted_log "lazymc-proxy" "INFO" "mc::lazymc" "Starting server..." 60

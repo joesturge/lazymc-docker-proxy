@@ -160,14 +160,22 @@ spec:
     targetPort: 25565
     nodePort: 30565
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: minecraft-client
   namespace: lazymc-test
 spec:
-  containers:
-  - name: client
-    image: itzg/mc-monitor:latest
-    command: ["sleep", "infinity"]
-  restartPolicy: Never
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft-client
+  template:
+    metadata:
+      labels:
+        app: minecraft-client
+    spec:
+      containers:
+      - name: client
+        image: itzg/mc-monitor:latest
+        command: ["sleep", "infinity"]
