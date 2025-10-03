@@ -8,12 +8,25 @@ use kube::{
 };
 use log::error;
 use tokio::runtime::Runtime;
+use std::sync::OnceLock;
 
 use crate::health;
 
+/// Get or create the global Tokio runtime
+fn get_runtime() -> &'static Runtime {
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+    RUNTIME.get_or_init(|| {
+        Runtime::new().unwrap_or_else(|err| {
+            error!(target: "lazymc-docker-proxy::kubernetes", "Error creating Tokio runtime: {}", err);
+            health::unhealthy();
+            exit(1)
+        })
+    })
+}
+
 /// Connect to the Kubernetes cluster
 pub fn connect() -> Client {
-    Runtime::new().unwrap().block_on(async {
+    get_runtime().block_on(async {
         Client::try_default().await.unwrap_or_else(|err| {
             error!(target: "lazymc-docker-proxy::kubernetes", "Error connecting to Kubernetes: {}", err);
             health::unhealthy();
@@ -27,7 +40,7 @@ pub fn stop(group: String) {
     debug!(target: "lazymc-docker-proxy::kubernetes", "Stopping pods...");
     let client = connect();
     
-    Runtime::new().unwrap().block_on(async {
+    get_runtime().block_on(async {
         let pods: Api<Pod> = Api::default_namespaced(client);
         let lp = ListParams::default()
             .labels(&format!("lazymc.group={}", group));
@@ -58,7 +71,7 @@ pub fn start(group: String) {
     debug!(target: "lazymc-docker-proxy::kubernetes", "Starting pods...");
     let client = connect();
     
-    Runtime::new().unwrap().block_on(async {
+    get_runtime().block_on(async {
         use k8s_openapi::api::apps::v1::{Deployment, StatefulSet};
         use kube::api::Patch;
         use kube::api::PatchParams;
@@ -120,7 +133,7 @@ pub fn start(group: String) {
 pub fn stop_all_pods() {
     let client = connect();
     
-    Runtime::new().unwrap().block_on(async {
+    get_runtime().block_on(async {
         use k8s_openapi::api::apps::v1::{Deployment, StatefulSet};
         use kube::api::Patch;
         use kube::api::PatchParams;
@@ -185,7 +198,7 @@ pub fn stop_all_pods() {
 pub fn get_pod_labels() -> Vec<HashMap<std::string::String, std::string::String>> {
     let client = connect();
     
-    Runtime::new().unwrap().block_on(async {
+    get_runtime().block_on(async {
         let pods: Api<Pod> = Api::default_namespaced(client.clone());
         let lp = ListParams::default()
             .labels("lazymc.enabled=true");
