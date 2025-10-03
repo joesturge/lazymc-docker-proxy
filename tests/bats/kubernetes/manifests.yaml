@@ -25,7 +25,7 @@ metadata:
     lazymc.enabled: "true"
     lazymc.group: "mc"
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: minecraft
@@ -37,7 +37,6 @@ spec:
         lazymc.group: "mc"
       annotations:
         lazymc.server.address: "minecraft-server:25565"
-        lazymc.server.probe_on_start: "true"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "5"
     spec:
@@ -160,3 +159,15 @@ spec:
     port: 25565
     targetPort: 25565
     nodePort: 30565
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: minecraft-client
+  namespace: lazymc-test
+spec:
+  containers:
+  - name: client
+    image: itzg/mc-monitor:latest
+    command: ["sleep", "infinity"]
+  restartPolicy: Never

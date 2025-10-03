@@ -23,6 +23,13 @@ setup_file() {
         dump_diagnostics
         exit 1
     fi
+    
+    # Wait for client pod to be ready
+    if ! wait_for_pod_ready minecraft-client 60; then
+        echo "Setup failed: minecraft-client pod not ready" >&3
+        dump_diagnostics
+        exit 1
+    fi
 }
 
 teardown_file() {
@@ -41,6 +48,13 @@ teardown_file() {
     
     # Wait for lazymc process to start
     wait_for_pod_formatted_log "lazymc-proxy" "INFO" "lazymc-docker-proxy::entrypoint" "Starting lazymc process for group: mc..." 60
+    
+    # Verify server deployment is scaled to 0 initially
+    replicas=$(get_deployment_replicas minecraft-server)
+    [ "$replicas" -eq 0 ]
+    
+    # Connect client to trigger server start
+    kubectl exec -n lazymc-test minecraft-client -- mc-monitor status --host lazymc-proxy --port 25565 || true
     
     # Wait for lazymc to start the server (it should scale up the deployment)
     wait_for_pod_formatted_log "lazymc-proxy" "INFO" "mc::lazymc" "Starting server..." 60
