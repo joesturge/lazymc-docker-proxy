@@ -25,7 +25,7 @@ metadata:
     lazymc.enabled: "true"
     lazymc.group: "mc"
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: minecraft
