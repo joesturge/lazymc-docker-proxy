@@ -37,6 +37,7 @@ spec:
         lazymc.group: "mc"
       annotations:
         lazymc.server.address: "minecraft-server:25565"
+        lazymc.server.probe_on_start: "true"
         lazymc.time.minimum_online_time: "30"
         lazymc.time.sleep_after: "5"
     spec:
