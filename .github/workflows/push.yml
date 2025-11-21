@@ -18,7 +18,7 @@ jobs:
     outputs:
       folders: ${{ steps.jobs.outputs.folders }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - id: jobs
         uses: kmanimaran/list-folder-action@v4
@@ -42,7 +42,7 @@ jobs:
         uses: mig4/setup-bats@v1
         
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Run tests
         uses: nick-fields/retry@v3
