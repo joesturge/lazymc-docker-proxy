@@ -16,5 +16,5 @@ serde = "1.0.228"
 tokio = { version = "1.48.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
-toml = "0.9.8"
+toml = "0.9.9"
 version-compare = "0.2.1"
