@@ -2,7 +2,7 @@ mod config;
 use config::Config;
 use log::Level;
 use regex::Regex;
-use std::{io::{BufRead, BufReader}, process::{self, exit}};
+use std::{io::{BufRead, BufReader}, process::{self, exit}, sync::OnceLock};
 
 use crate::{docker, health::{self}};
 
@@ -74,8 +74,13 @@ pub fn run() {
 
 /// Wrap log messages from child processes
 fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
+    static LOG_REGEX: OnceLock<Regex> = OnceLock::new();
+    let regex = LOG_REGEX.get_or_init(|| {
+        Regex::new(r"(?P<level>[A-Z]+)\s+(?P<target>[a-zA-Z0-9:_-]+)\s+>\s+(?P<message>.+)$")
+            .unwrap()
+    });
+
     if let Ok(line) = line {
-        let regex: Regex = Regex::new(r"(?P<level>[A-Z]+)\s+(?P<target>[a-zA-Z0-9:_-]+)\s+>\s+(?P<message>.+)$").unwrap();
         if let Some(captures) = regex.captures(&line) {
             let level: Level = captures.name("level").unwrap().as_str().parse().unwrap();
             let target = captures.name("target").unwrap().as_str();
