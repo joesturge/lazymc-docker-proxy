@@ -5,7 +5,7 @@ edition = "2021"
 rust-version = "1.74.0"
 
 [dependencies]
-azalea = "0.10.3+mc1.21.1" 
+azalea = "0.15.0+mc1.21.1" 
 tokio = { version = "1.48.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
