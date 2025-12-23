@@ -132,7 +132,7 @@ pub fn stop_all_containers() {
         container.id.as_ref().map(|id| {
             Runtime::new().unwrap().block_on(
                 docker
-                    .stop_container(id, None)
+                    .stop_container(id, None::<StopContainerOptions>)
                     .then(|result| async {
                         debug!(target: "lazymc-docker-proxy::docker", "Stopped container: {}", id);
                         return result.unwrap();
