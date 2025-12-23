@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Recompilation of reqgex when wrapping logs
+- Type error on docker command
+
 ## [2.7.3] - 2025-09-25
 
 ### Fixed
