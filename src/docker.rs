@@ -17,7 +17,7 @@ pub fn connect() -> Docker {
         exit(1)
     });
 
-    return docker;
+    docker
 }
 
 /// Stop container with the label "lazymc.group=group"
@@ -57,7 +57,7 @@ pub fn stop(group: String) {
                         error!(target: "lazymc-docker-proxy::docker", "Error stopping container: {}", err);
                     }
                 }
-                return future::ready(()).await;
+                future::ready(()).await
             }),
     );
 }
@@ -99,7 +99,7 @@ pub fn start(group: String) {
                         error!(target: "lazymc-docker-proxy::docker", "Error starting container: {}", err);
                     }
                 }
-                return future::ready(()).await;
+                future::ready(()).await
             }),
     );
 }
@@ -124,7 +124,7 @@ pub fn stop_all_containers() {
             }))
             .then(|containers| async {
                 debug!(target: "lazymc-docker-proxy::docker", "Found {} container(s) to stop", containers.as_ref().unwrap().len());
-                return containers.unwrap();
+                containers.unwrap()
             }),
     );
 
@@ -135,7 +135,7 @@ pub fn stop_all_containers() {
                     .stop_container(id, None::<StopContainerOptions>)
                     .then(|result| async {
                         debug!(target: "lazymc-docker-proxy::docker", "Stopped container: {}", id);
-                        return result.unwrap();
+                        result.unwrap()
                     }),
             );
         });
@@ -163,7 +163,7 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
             }))
             .then(|containers| async {
                 debug!(target: "lazymc-docker-proxy::docker", "Found {} container(s) to get labels", containers.as_ref().unwrap().len());
-                return containers.unwrap();
+                containers.unwrap()
             }),
     );
 
@@ -206,8 +206,8 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
             });
 
         // if we have a port and an IP address, add the resolved address to the labels
-        if port.is_some() && ip_address.is_some() {
-            let address = format!("{}:{}", ip_address.unwrap(), port.unwrap());
+        if let (Some(port), Some(ip_address)) = (port, ip_address) {
+            let address = format!("{}:{}", ip_address, port);
             debug!(target: "lazymc-docker-proxy::docker", "Resolved address: {}", address);
             labels.insert("lazymc.server.address".to_string(), address);
         }
@@ -215,5 +215,5 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
         label_sets.push(labels);
     }
 
-    return label_sets;
+    label_sets
 }

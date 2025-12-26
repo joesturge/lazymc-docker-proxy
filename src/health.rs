@@ -34,7 +34,7 @@ impl From<Status> for String {
 pub fn check() -> Status {
     let status = fs::read_to_string("/app/health").unwrap_or_else(|_| Status::UNHEALTHY.into());
     debug!(target: "lazymc-docker-proxy::health", "Health status: {}", status);
-    return status.trim().into();
+    status.trim().into()
 }
 
 /// Set the status

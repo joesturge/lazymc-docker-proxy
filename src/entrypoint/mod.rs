@@ -87,7 +87,7 @@ fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
             let message = captures.name("message").unwrap().as_str();
 
             let wrapped_target = &format!("{}::{}", group, target);
-            let log_message = format!("{}", message);
+            let log_message = message.to_string();
             log!(target: wrapped_target, level, "{}", log_message);
             handle_log(group, &level, &log_message);
         } else {
@@ -97,12 +97,12 @@ fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
 }
 
 /// Handle log messages that require special attention
-fn handle_log(group: &String, level: &Level, message: &String) {
-    match (level, message.as_str()) {
+fn handle_log(group: &str, level: &Level, message: &str) {
+    match (level, message) {
         (Level::Warn, "Failed to stop server, no more suitable stopping method to use") => {
-            warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group.clone());
-            docker::stop(group.clone());
-            info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group.clone());
+            warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group);
+            docker::stop(group.to_string());
+            info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group);
         }
         _ => {}
     }
