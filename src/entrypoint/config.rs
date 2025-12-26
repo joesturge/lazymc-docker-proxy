@@ -185,7 +185,7 @@ impl Config {
         let server_section: ServerSection = ServerSection {
             address: labels.get("lazymc.server.address")
                 .and_then(|address| address.to_socket_addrs().ok())
-                .and_then(|addrs| addrs.filter(|addr| addr.is_ipv4()).next())
+                .and_then(|mut addrs| addrs.find(|addr| addr.is_ipv4()))
                 .and_then(|addr| addr.to_string().parse().ok())
                 .or_else(|| {
                     warn!(target: "lazymc-docker-proxy::entrypoint::config", "Failed to resolve IP address from lazymc.server.address. Falling back to the value provided.");
