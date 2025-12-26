@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::process::exit;
 
-use bollard::container::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
+use bollard::query_parameters::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
 use bollard::Docker;
 use futures::{future, FutureExt};
 use log::error;
@@ -40,7 +40,7 @@ pub fn stop(group: String) {
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
-                filters: list_container_filters,
+                filters: Some(list_container_filters),
                 ..Default::default()
             }))
             .then(|containers| async {
@@ -82,7 +82,7 @@ pub fn start(group: String) {
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
-                filters: list_container_filters,
+                filters: Some(list_container_filters),
                 ..Default::default()
             }))
             .then(|containers| async {
@@ -92,7 +92,7 @@ pub fn start(group: String) {
                     if let Err(err) = docker
                         .start_container(
                             container.id.as_ref().unwrap(),
-                            None::<StartContainerOptions<&str>>,
+                            None::<StartContainerOptions>,
                         )
                         .await
                     {
@@ -119,7 +119,7 @@ pub fn stop_all_containers() {
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
-                filters: list_container_filters,
+                filters: Some(list_container_filters),
                 ..Default::default()
             }))
             .then(|containers| async {
@@ -158,7 +158,7 @@ pub fn get_container_labels() -> Vec<HashMap<std::string::String, std::string::S
         docker
             .list_containers(Some(ListContainersOptions {
                 all: true,
-                filters: list_container_filters,
+                filters: Some(list_container_filters),
                 ..Default::default()
             }))
             .then(|containers| async {
