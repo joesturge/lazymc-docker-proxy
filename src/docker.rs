@@ -129,7 +129,7 @@ pub fn stop_all_containers() {
     );
 
     for container in containers {
-        container.id.as_ref().map(|id| {
+        if let Some(id) = container.id.as_ref() {
             Runtime::new().unwrap().block_on(
                 docker
                     .stop_container(id, None::<StopContainerOptions>)
@@ -138,9 +138,8 @@ pub fn stop_all_containers() {
                         result.unwrap()
                     }),
             );
-        });
+        }
     }
-
 }
 
 /// Get all labels for containers with the label "lazymc.enabled=true"
