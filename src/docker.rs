@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::process::exit;
 
-use bollard::query_parameters::{ListContainersOptions, StartContainerOptions, StopContainerOptions};
+use bollard::query_parameters::{
+    ListContainersOptions, StartContainerOptions, StopContainerOptions,
+};
 use bollard::Docker;
 use futures::{future, FutureExt};
 use log::error;
@@ -30,10 +32,7 @@ pub fn stop(group: String) {
 
     // find all matching running containers
     list_container_filters.insert("status".to_string(), vec!["running".to_string()]);
-    list_container_filters.insert(
-        "label".to_string(),
-        vec![format!("lazymc.group={}", group)],
-    );
+    list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", group)]);
 
     // find all matching containers and then stop them using .then()
     Runtime::new().unwrap().block_on(
@@ -49,7 +48,7 @@ pub fn stop(group: String) {
                     info!(target: "lazymc-docker-proxy::docker", "Stopping container: {}", container.names.unwrap().first().unwrap());
                     if let Err(err) = docker
                         .stop_container(
-                            container.id.as_ref().unwrap(), 
+                            container.id.as_ref().unwrap(),
                             None::<StopContainerOptions>
                         )
                         .await
@@ -72,10 +71,7 @@ pub fn start(group: String) {
 
     // find all matching exited containers
     list_container_filters.insert("status".to_string(), vec!["exited".to_string()]);
-    list_container_filters.insert(
-        "label".to_string(),
-        vec![format!("lazymc.group={}", group)],
-    );
+    list_container_filters.insert("label".to_string(), vec![format!("lazymc.group={}", group)]);
 
     // find all matching containers and then stop them using .then()
     Runtime::new().unwrap().block_on(

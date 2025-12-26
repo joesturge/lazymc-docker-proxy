@@ -11,7 +11,8 @@ pub fn run(group: String) {
         info!(target: "lazymc-docker-proxy::command", "Received SIGTERM, stopping server...");
         docker::stop(cloned_group.clone());
         process::exit(0);
-    }).unwrap();
+    })
+    .unwrap();
 
     // Start the command
     docker::start(group.clone());
