@@ -2,9 +2,16 @@ mod config;
 use config::Config;
 use log::Level;
 use regex::Regex;
-use std::{io::{BufRead, BufReader}, process::{self, exit}, sync::OnceLock};
+use std::{
+    io::{BufRead, BufReader},
+    process::{self, exit},
+    sync::OnceLock,
+};
 
-use crate::{docker, health::{self}};
+use crate::{
+    docker,
+    health::{self},
+};
 
 /// Entrypoint for the application
 pub fn run() {
@@ -28,7 +35,8 @@ pub fn run() {
         let group: String = config.group().into();
 
         info!(target: "lazymc-docker-proxy::entrypoint", "Starting lazymc process for group: {}...", group.clone());
-        let mut child: process::Child = config.start_command()
+        let mut child: process::Child = config
+            .start_command()
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()
@@ -68,8 +76,6 @@ pub fn run() {
     loop {
         std::thread::park();
     }
-
-    
 }
 
 /// Wrap log messages from child processes
@@ -87,7 +93,7 @@ fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
             let message = captures.name("message").unwrap().as_str();
 
             let wrapped_target = &format!("{}::{}", group, target);
-            let log_message = format!("{}", message);
+            let log_message = message.to_string();
             log!(target: wrapped_target, level, "{}", log_message);
             handle_log(group, &level, &log_message);
         } else {
@@ -97,13 +103,12 @@ fn wrap_log(group: &String, line: Result<String, std::io::Error>) {
 }
 
 /// Handle log messages that require special attention
-fn handle_log(group: &String, level: &Level, message: &String) {
-    match (level, message.as_str()) {
-        (Level::Warn, "Failed to stop server, no more suitable stopping method to use") => {
-            warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group.clone());
-            docker::stop(group.clone());
-            info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group.clone());
-        }
-        _ => {}
+fn handle_log(group: &str, level: &Level, message: &str) {
+    if let (Level::Warn, "Failed to stop server, no more suitable stopping method to use") =
+        (level, message)
+    {
+        warn!(target: "lazymc-docker-proxy::entrypoint", "Unexpected server state detected, force stopping {} server container...", group);
+        docker::stop(group.to_string());
+        info!(target: "lazymc-docker-proxy::entrypoint", "{} server container forcefully stopped", group);
     }
 }
