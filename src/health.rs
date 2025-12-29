@@ -1,45 +1,27 @@
 use std::{fs, process::exit};
+use strum::{Display, EnumString};
 
 /// The status of the health check
+
+#[derive(EnumString, Display)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Status {
     STARTING,
     HEALTHY,
     UNHEALTHY,
 }
 
-/// Convert a string to a status
-impl From<&str> for Status {
-    fn from(status: &str) -> Status {
-        match status {
-            "STARTING" => Status::STARTING,
-            "HEALTHY" => Status::HEALTHY,
-            "UNHEALTHY" => Status::UNHEALTHY,
-            _ => Status::UNHEALTHY,
-        }
-    }
-}
-
-/// Convert a status to a string
-impl From<Status> for String {
-    fn from(status: Status) -> String {
-        match status {
-            Status::STARTING => "STARTING".to_string(),
-            Status::HEALTHY => "HEALTHY".to_string(),
-            Status::UNHEALTHY => "UNHEALTHY".to_string(),
-        }
-    }
-}
-
 /// Check the status
 pub fn check() -> Status {
-    let status = fs::read_to_string("/app/health").unwrap_or_else(|_| Status::UNHEALTHY.into());
+    let status =
+        fs::read_to_string("/app/health").unwrap_or_else(|_| Status::UNHEALTHY.to_string());
     debug!(target: "lazymc-docker-proxy::health", "Health status: {}", status);
-    status.trim().into()
+    status.trim().parse().unwrap_or(Status::UNHEALTHY)
 }
 
 /// Set the status
 fn set(status: Status) {
-    let status_str: String = status.into();
+    let status_str = status.to_string();
     debug!(target: "lazymc-docker-proxy::health", "Setting health status to: {}", status_str);
     fs::write("/app/health", status_str).unwrap();
 }
