@@ -11,10 +11,6 @@ reset_timestamp() {
 setup() {
     reset_timestamp
 
-    echo "Building docker compose..." >&3
-    docker builder prune --all --force
-    docker compose --project-directory $project build
-
     echo "Starting docker compose..." >&3
     docker compose --project-directory $project up -d
 }
@@ -36,7 +32,7 @@ wait_for_formatted_log() {
     local regex="${level}\s+${target}\s+>\s+${logline}"
 
     echo "Waiting: $container | $level $target > $logline" >&3
-    
+
     trap 'exit 1' SIGINT SIGTERM
     until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -qE "$regex";
     do
@@ -56,7 +52,7 @@ wait_for_log() {
     local timeout=${3:-60}
 
     echo "Waiting: $container | $logline" >&3
-    
+
     trap 'exit 1' SIGINT SIGTERM
     until docker compose --project-directory $project logs --since $start_timestamp --no-color ${container} | grep -q "$logline";
     do

@@ -19,7 +19,7 @@ services:
       - data:/server:ro
     ports:
       - "25565:25565"
-    build: ../../../
+    image: lazymc-docker-proxy-test
 
   mc-unexpected-server-state-recovery:
     image: itzg/minecraft-server:java21
