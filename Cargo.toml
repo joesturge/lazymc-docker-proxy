@@ -5,13 +5,13 @@ edition = "2021"
 rust-version = "1.74.0"
 
 [dependencies]
-bollard = "0.20.0"
-clap = { version = "4.5.54", features = ["derive"] }
+bollard = "0.20.1"
+clap = { version = "4.5.57", features = ["derive"] }
 ctrlc = { version = "3.5.1", features = ["termination"] }
 futures = "0.3.31"
 log = "0.4"
 pretty_env_logger = "0.5"
-regex = "1.12.2"
+regex = "1.12.3"
 serde = "1.0.228"
 strum = { version = "0.27.2", features = ["derive"] }
 tokio = { version = "1.49.0", default-features = false, features = [
