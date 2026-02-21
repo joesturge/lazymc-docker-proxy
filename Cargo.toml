@@ -8,7 +8,7 @@ rust-version = "1.74.0"
 bollard = "0.20.1"
 clap = { version = "4.5.57", features = ["derive"] }
 ctrlc = { version = "3.5.1", features = ["termination"] }
-futures = "0.3.31"
+futures = "0.3.32"
 log = "0.4"
 pretty_env_logger = "0.5"
 regex = "1.12.3"
