@@ -11,6 +11,37 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  build-image:
+    name: Build test image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          tags: lazymc-docker-proxy-test
+          outputs: type=docker,dest=/tmp/docker-image.tar
+          cache-from: type=gha
+          cache-to: type=gha
+
+      - name: Compress image
+        run: gzip < /tmp/docker-image.tar > docker-image.tar.gz
+
+      - name: Upload docker image
+        uses: actions/upload-artifact@v6
+        with:
+          name: docker-image-test
+          path: docker-image.tar.gz
+          retention-days: 1
+
+
   find-tests:
     name: Find Tests
     runs-on: ubuntu-latest
@@ -26,7 +57,7 @@ jobs:
           path: ./tests/bats
 
   test:
-    needs: [find-tests]
+    needs: [find-tests, build-image]
     strategy:
       matrix:
         inputs: ${{fromJson(needs.find-tests.outputs.folders)}}
@@ -40,14 +71,21 @@ jobs:
     steps:
       - name: Setup BATS
         uses: mig4/setup-bats@v1
-        
+
       - name: Checkout repository
         uses: actions/checkout@v5
-      
+
+      - name: Download docker image
+        uses: actions/download-artifact@v7
+        with:
+          name: docker-image-test
+
+      - name: Load docker image
+        run: docker load < docker-image.tar.gz
+
       - name: Run tests
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 30
           max_attempts: 5
           command: bats ./tests/bats/${{ matrix.inputs }}
-      
