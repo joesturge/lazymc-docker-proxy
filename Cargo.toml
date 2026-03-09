@@ -17,5 +17,5 @@ strum = { version = "0.28.0", features = ["derive"] }
 tokio = { version = "1.50.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
-toml = "1.0.3"
+toml = "1.0.6"
 version-compare = "0.2.1"
