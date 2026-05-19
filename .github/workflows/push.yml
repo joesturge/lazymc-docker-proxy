@@ -15,6 +15,9 @@ jobs:
     name: Find Tests
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     outputs:
       folders: ${{ steps.jobs.outputs.folders }}
     steps:
