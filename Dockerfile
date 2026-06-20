@@ -3,7 +3,7 @@ ARG LAZYMC_VERSION=0.2.11
 ARG LAZYMC_LEGACY_VERSION=0.2.10
 
 # set up rust
-FROM --platform=$BUILDPLATFORM rust:1.90 AS rust-setup
+FROM --platform=$BUILDPLATFORM rust:1.92-slim AS rust-setup
 ARG TARGETARCH
 RUN <<EOF
   echo Running build for $TARGETARCH
@@ -17,7 +17,7 @@ RUN <<EOF
   fi
 EOF
 RUN rustup target add "$(cat /rust-arch)"
-RUN apt update && apt install -y musl-tools musl-dev
+RUN apt update && apt install -y musl-tools musl-dev git
 RUN update-ca-certificates
 RUN apt-get update && apt-get install -y pkg-config libssl-dev crossbuild-essential-arm64 crossbuild-essential-armhf
 

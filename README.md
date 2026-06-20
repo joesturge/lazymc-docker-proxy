@@ -1,10 +1,18 @@
 # lazymc-docker-proxy
 
-By using this image, you can combine the straightforward management of Minecraft servers using [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) with the efficiency of [lazymc](https://github.com/timvisee/lazymc).
+`lazymc-docker-proxy` lets `lazymc` manage and proxy one or more Docker-based Minecraft servers.
+It is designed for setups where server containers remain stopped until a player joins,
+while exposing a stable external endpoint through a proxy container.
 
-If you have multiple Docker Minecraft servers and you are low on resources or want to save compute power, this project is for you. With `lazymc-docker-proxy`, you can dynamically start a Docker Minecraft server when a player joins and shut it down when the server is idle.
+This project combines:
+- `itzg/minecraft-server` for the Minecraft server container.
+- `lazymc` for starting and stopping servers on demand.
+- `lazymc-docker-proxy` for proxying client traffic into managed containers.
 
-This project is also somewhat inspired by [lazytainer](https://github.com/vmorganp/Lazytainer).
+Important notes:
+- `lazymc` requires static IP addresses for managed server containers.
+- For modern Minecraft versions (26.x), use `itzg/minecraft-server:java25`.
+- The recommended proxy image is `ghcr.io/joesturge/lazymc-docker-proxy:latest`.
 
 ![example](images/example.png)
 
@@ -352,52 +360,6 @@ Here is a full list of the environment variables supported by this image (\* is 
 - **TIME_SLEEP_AFTER** - Sleep after a number of seconds.
 - **TIME_MINIMUM_ONLINE_TIME** - Minimum time in seconds to stay online when the server is started.
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
-
-## Development
-
-Thanks for wanting to contribute! Please read the [contributing guidelines](CONTRIBUTING.md) first off.
-
-### Compile locally
-
-To develop changes fork this repo and ensure you have the following installed:
-
-- [rust](https://www.rust-lang.org/tools/install)
-- [docker + docker compose](https://docs.docker.com/get-docker/)
-- [bats testing](https://bats-core.readthedocs.io/en/stable/installation.html)
-
-Then run the following
-
-```bash
-cargo build --release
-```
-
-to build the executable under `target/release` directory.
-
-### Docker
-
-To build the dockerfile locally you can run (from the project root)
-
-```bash
-docker build .
-```
-
-It is good to also check this before committing to make sure you did not break the build
-
-### Testing
-
-There are bats integration test for this application. Which each perform the following:
-
-1. Builds the docker compose file
-2. Starts the docker compose environment
-3. Waits for the minecraft container(s) to start
-4. Waits for lazymc to stop the minecraft container(s)
-
-These checks are performed in using github actions on every commit
-
-### Changelog
-
-This project uses [keepachangelog](https://keepachangelog.com/en/1.1.0/) to maintain it's changelog.
-If you are proposing a change please update the [changelog](CHANGELOG.md) by adding your changes under the `[Unreleased]` header
 
 ## Thanks
 
