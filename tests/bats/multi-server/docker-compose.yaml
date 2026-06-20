@@ -12,7 +12,7 @@ services:
     build: ../../../
 
   primary:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     container_name: primary
     labels:
       - lazymc.enabled=true
@@ -30,7 +30,7 @@ services:
       - data-primary:/data
 
   secondary:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     container_name: secondary
     labels:
       - lazymc.enabled=true

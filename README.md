@@ -60,7 +60,7 @@ services:
 
   # Standard Docker Minecraft server, also works with other server types
   mc:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     # Assign a static IP to the server container
     networks:
       minecraft-network:
@@ -148,7 +148,7 @@ services:
     #  - "25566:25566"
 
   primary:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     # Assign a static IP to the primary server container
     networks:
       minecraft-network:
@@ -174,7 +174,7 @@ services:
       - data-primary:/data
 
   secondary:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     # Assign a static IP to the secondary server container
     networks:
       minecraft-network:
@@ -230,7 +230,7 @@ services:
       - "25565:25565"
 
   mc:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     networks:
       minecraft-network:
         ipv4_address: 172.18.0.3

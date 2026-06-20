@@ -40,7 +40,7 @@ services:
 
   # Standard Docker Minecraft server, also works with other server types
   mc:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     # Assign a static IP to the server container
     networks:
       minecraft-network:
