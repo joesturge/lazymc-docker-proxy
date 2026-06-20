@@ -48,7 +48,7 @@ RUN cargo build --target "$(cat /rust-arch)" --release --locked
 RUN mv /usr/src/lazymc-docker-proxy/target/"$(cat /rust-arch)" /usr/src/lazymc-docker-proxy/target/output_final
 
 # health init
-FROM --platform=$BUILDPLATFORM busybox:1.37.0-uclibc AS health-init
+FROM --platform=$BUILDPLATFORM busybox:1.38.0-uclibc AS health-init
 RUN mkdir -p /app && echo "STARTING" > /app/health
 
 # final image
