@@ -321,6 +321,29 @@ Also, refer to the lazymc [config example](https://github.com/timvisee/lazymc/bl
 You can enable debug logging using the `RUST_LOG` env var.
 
 - **RUST_LOG** - Set this to `trace` or `debug` to troubleshoot issues.
+- **DOCKER_HOST** - The Docker daemon to connect to, e.g. `unix:///var/run/docker.sock` or `tcp://docker-socket-proxy:2375`. Defaults to `/var/run/docker.sock`.
+
+#### Using a Docker socket proxy
+
+Instead of mounting the Docker socket directly, you can put a socket proxy such as [docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy) or [CetusGuard](https://github.com/hectorm/cetusguard) in front of it and point `DOCKER_HOST` at it. `lazymc-docker-proxy` only needs to list, start and stop containers:
+
+```yaml
+services:
+  lazymc:
+    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    environment:
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
+    # no docker.sock volume needed
+    # ...
+
+  docker-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    environment:
+      - CONTAINERS=1
+      - POST=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+```
 
 #### Deprecated
 
