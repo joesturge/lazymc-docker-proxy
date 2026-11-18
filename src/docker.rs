@@ -13,7 +13,7 @@ use crate::health;
 
 /// Connect to the docker daemon
 pub fn connect() -> Docker {
-    let docker: Docker = Docker::connect_with_local_defaults().unwrap_or_else(|err| {
+    let docker: Docker = Docker::connect_with_defaults().unwrap_or_else(|err| {
         error!(target: "lazymc-docker-proxy::docker", "Error connecting to docker: {}", err);
         health::unhealthy();
         exit(1)
