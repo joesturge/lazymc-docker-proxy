@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-11-18
+
 ### Added
 
 - Support for environment variable `DOCKER_HOST` for compatabilty with `docker-socket-proxy` container.
@@ -215,7 +217,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Detailed README file with example of usage and env var description
 - Github actions to build and push docker image
 
-[unreleased]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.7.5...HEAD
+[unreleased]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.7.5...v2.8.0
 [2.7.5]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.7.4...v2.7.5
 [2.7.4]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.7.3...v2.7.4
 [2.7.3]: https://github.com/joesturge/lazymc-docker-proxy/compare/v2.7.2...v2.7.3
