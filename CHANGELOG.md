@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support for environment variable `DOCKER_HOST` for compatabilty with `docker-socket-proxy` container.
+- Support for environment variable `DOCKER_HOST` for compatabilty with `docker-socket-proxy` container. Thanks @pavelvodrazka!
 
 ## [2.7.5] - 2026-06-20
 
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Double escaping of linebreaks in MOTD no longer occurs, thanks @shiroyashik
+- Double escaping of linebreaks in MOTD no longer occurs, thanks @shiroyashik!
 
 ### Security
 
